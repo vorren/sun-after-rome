@@ -1,0 +1,26 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Fennel
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4 liblua5.4-dev
+          curl -sL https://fennel-lang.org/fennel.lua -o /usr/local/bin/fennel
+          chmod +x /usr/local/bin/fennel
+
+      - name: Build
+        run: make build
+
+      - name: Run tests
+        run: make test

@@ -1,5 +1,8 @@
 # Sun After Rome
 
+[![Tests](https://github.com/vorren/sun-after-rome/actions/workflows/test.yml/badge.svg)](https://github.com/vorren/sun-after-rome/actions/workflows/test.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
 An Age of Empires II-style real-time strategy game built with **Fennel** and **LÖVE**.
 
 ## What is this?
