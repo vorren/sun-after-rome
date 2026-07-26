@@ -38,7 +38,7 @@
     (when ok
       (repl.start)))
   ;; Set love.update ticks
-  (print "Aurelius loaded. Press F5 to reset, click to select."))
+  (print "Sun After Rome loaded. Press F5 to reset, click to select."))
 
 (var accumulator 0)
 (var tick-dt (/ 1 15))  ;; 15 Hz tick rate

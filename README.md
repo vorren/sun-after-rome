@@ -1,10 +1,10 @@
-# Aurelius
+# Sun After Rome
 
 An Age of Empires II-style real-time strategy game built with **Fennel** and **LÖVE**.
 
 ## What is this?
 
-Aurelius is a small, deterministic RTS game implementing the core AoE2 gameplay loop: **gather resources, train units, advance through ages, and fight**. It features:
+Sun After Rome is a small, deterministic RTS game implementing the core AoE2 gameplay loop: **gather resources, train units, advance through ages, and fight**. It features:
 
 - **Deterministic simulation** — same seed + same commands = identical world
 - **Two-player LAN multiplayer** — lockstep simulation via ENet

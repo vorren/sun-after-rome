@@ -11,7 +11,7 @@
 (fn draw-hud [w]
   ;; Resource display for player 1
   (love.graphics.setColor 1 1 1)
-  (love.graphics.print "=== Aurelius ===" 10 10)
+  (love.graphics.print "=== Sun After Rome ===" 10 10)
   (love.graphics.print (.. "Tick: " w.tick) 10 30)
   ;; Player 1 resources
   (for [p 1 w.num-players]
