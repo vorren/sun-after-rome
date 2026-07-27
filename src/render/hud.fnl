@@ -3,6 +3,7 @@
 (local world (require :src.world))
 (local content (require :src.content))
 (local iso (require :src.render.iso))
+(local orders (require :src.orders))
 
 (var selected-eid nil)
 
@@ -28,8 +29,10 @@
   (let [tile-w 64
         tile-h 32
         offset-x 640
-        offset-y 100]
-    (iso.to-tile (- screen-x offset-x) (- screen-y offset-y) tile-w tile-h)))
+        offset-y 100
+        (raw-tx raw-ty) (iso.to-tile (- screen-x offset-x) (- screen-y offset-y) tile-w tile-h)]
+    (values (math.floor (+ raw-tx 0.5))
+            (math.floor (+ raw-ty 0.5)))))
 
 (fn classify-target [w eid]
   (when eid
@@ -45,35 +48,17 @@
           :neutral)))))
 
 (fn issue-gather [w eid target]
-  (let [t (world.world-get w eid :task)]
-    (when t
-      (let [node-pos (world.world-get w target :position)]
-        (set t.kind :gather)
-        (set t.phase :to-node)
-        (set t.target target)
-        (when node-pos
-          (set t.tx node-pos.x)
-          (set t.ty node-pos.y))))))
+  (let [node-pos (world.world-get w target :position)]
+    (when node-pos
+      (orders.issue! w (orders.gather eid target)))))
 
 (fn issue-attack [w eid target]
-  (let [t (world.world-get w eid :task)]
-    (when t
-      (let [target-pos (world.world-get w target :position)]
-        (set t.kind :attack)
-        (set t.phase nil)
-        (set t.target target)
-        (when target-pos
-          (set t.tx target-pos.x)
-          (set t.ty target-pos.y))))))
+  (let [target-pos (world.world-get w target :position)]
+    (when target-pos
+      (orders.issue! w (orders.attack eid target)))))
 
 (fn issue-move [w eid tx ty]
-  (let [t (world.world-get w eid :task)]
-    (when t
-      (set t.kind :move)
-      (set t.phase nil)
-      (set t.target nil)
-      (set t.tx tx)
-      (set t.ty ty))))
+  (orders.issue! w (orders.move eid tx ty)))
 
 (fn handle-right-click [x y w]
   (when selected-eid
@@ -99,7 +84,7 @@
               screen-y (+ sy offset-y)]
           (love.graphics.setColor 0.2 1 0.2 0.8)
           (love.graphics.setLineWidth 2)
-          (love.graphics.ellipse "line" screen-y screen-x (* tile-w 0.6) (* tile-h 0.6))
+          (love.graphics.ellipse "line" screen-x screen-y (* tile-w 0.6) (* tile-h 0.6))
           (love.graphics.setLineWidth 1)
           (love.graphics.setColor 1 1 1 1))))))
 
