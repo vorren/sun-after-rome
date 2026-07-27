@@ -60,12 +60,10 @@
     (when ok (repl.poll))))
 
 (fn love.draw []
-  ;; Draw terrain
   (when terrain
     (map.draw-terrain terrain game-world))
-  ;; Draw entities
   (sprites.draw-world game-world)
-  ;; Draw HUD
+  (hud.draw-selection-highlight game-world)
   (hud.draw-hud game-world))
 
 (fn love.keypressed [key]
@@ -100,8 +98,7 @@
     :b (orders.issue! game-world (orders.advance-age 1))))
 
 (fn love.mousepressed [x y button]
-  (when (= button 1)
-    (hud.handle-click x y game-world)))
+  (hud.handle-click x y game-world button))
 
 ;; Expose game-world for REPL access
 (fn get-world [] game-world)
