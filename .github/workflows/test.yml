@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   push:
@@ -7,8 +7,55 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Fennel
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4
+          curl -sL https://fennel-lang.org/downloads/fennel-1.6.1-x86_64 -o /usr/local/bin/fennel
+          chmod +x /usr/local/bin/fennel
+          fennel --version
+
+      - name: Lint source files
+        run: |
+          status=0
+          for f in $(find src -name '*.fnl'); do
+            echo "lint: $f"
+            fennel --compile "$f" > /dev/null || status=1
+          done
+          for f in $(find test -name '*.fnl'); do
+            echo "lint: $f"
+            fennel --compile "$f" > /dev/null || status=1
+          done
+          exit $status
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Fennel
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4
+          curl -sL https://fennel-lang.org/downloads/fennel-1.6.1-x86_64 -o /usr/local/bin/fennel
+          chmod +x /usr/local/bin/fennel
+          fennel --version
+
+      - name: Build
+        run: make build
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
     steps:
       - uses: actions/checkout@v4
 
