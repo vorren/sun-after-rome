@@ -129,6 +129,88 @@ make test
 make clean
 ```
 
+## Live REPL
+
+The game includes a file-based Fennel REPL for inspecting and modifying game state at runtime. Start the game, then send expressions from another terminal.
+
+### Terminal usage
+
+```bash
+# Start the game
+love .
+
+# In another terminal, use the helper script
+./repl.sh
+
+# Or manually:
+echo '(pp (world.world-query game-world :kind))' > repl.in
+cat repl.out
+```
+
+### Emacs usage
+
+**Option 1: Shell buffer with repl.sh (no extra packages)**
+
+```elisp
+;; M-x shell — run repl.sh in a shell buffer
+;; Or create a dedicated REPL buffer:
+(defun sar-repl ()
+  "Open a Sun After Rome REPL buffer."
+  (interactive)
+  (let ((buf (make-comint "sar-repl" "./repl.sh")))
+    (pop-to-buffer buf)))
+
+;; Send a region to the REPL:
+(defun sar-send-region (start end)
+  "Send the active region to the SAR REPL."
+  (interactive "r")
+  (let ((code (buffer-substring-no-properties start end)))
+    (with-current-buffer "*sar-repl*"
+      (comint-send-string (get-buffer-process (current-buffer))
+                          (concat code "\n")))))
+
+;; Bind it:
+(global-set-key (kbd "C-c C-r") 'sar-send-region)
+```
+
+**Option 2: Fennel mode + comint (if using fennel-mode)**
+
+```elisp
+;; In your init.el, fennel-mode can send code to a comint buffer:
+(require 'fennel-mode)
+
+;; Bind fennel-send-last-sexp to send the expression before point:
+(define-key fennel-mode-map (kbd "C-c C-e") 'fennel-send-last-sexp)
+```
+
+### Example REPL sessions
+
+```fennel
+;; Inspect all entities
+(pp (world.world-query game-world :kind))
+
+;; Check player 0's wood
+(world.resource-amount game-world 0 :wood)
+
+;; Give player 0 infinite gold
+(world.add-resource! game-world 0 :gold 9999)
+
+;; Spawn a knight for player 0 at (10, 10)
+(world.spawn! game-world :knight {:owner 0 :x 10 :y 10})
+
+;; Kill all enemies
+(each [_ pair (ipairs (world.world-query game-world :health))]
+  (let [owner (world.world-get game-world pair.eid :owner)]
+    (when (and owner (= owner.player 1))
+      (world.world-remove-entity! game-world pair.eid))))
+
+;; Check current tick
+game-world.tick
+
+;; Force-advance player 0 to age 3
+(world.set-player-age! game-world 0 3)
+```
+
 ## Architecture
 
 The game uses an **Entity-Component-System (ECS)** architecture:
