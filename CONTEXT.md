@@ -1,64 +1,57 @@
-# Sun After Rome — Session Context
+# Sun After Rome — Domain Context
 
-## What We Built
+An Age of Empires II-style deterministic RTS. Two factions compete by gathering resources, training units, advancing through ages, and fighting.
 
-Ported Sun After Rome (AOE2-style RTS, formerly "Aurelius") from Guile Scheme to Fennel + LÖVE.
+## Language
 
-### Decision Log
+**Faction**:
+A side in the game. Owns entities, resources, and an age level. Identified by player index (0 or 1).
+_Avoid_: player, side, team
 
-- **Guile → Fennel + LÖVE** — decided after grilling session. Guile's live REPL was the best for inspection, but Fennel + LÖVE won on: isometric rendering (LÖVE proven), LAN multiplayer (lua-enet), cross-platform (macOS + Linux), easier onboarding for Haskell co-dev.
-- **Common Lisp ruled out** — too steep a learning curve.
-- **Haskell ruled out** — weakest live inspection (GHCi requires pausing game loop), no LÖVE-equivalent game framework.
-- **Placeholder sprites** — colored shapes until real art assets exist.
-- **Tiled + procedural** — both map design approaches supported.
-- **LAN lockstep** — AoE2-style deterministic lockstep via lua-enet. Both players run full simulation, exchange commands only.
-- **Test suite** — luaunit, test pure logic outside LÖVE.
+**Controller**:
+The thing deciding what orders to issue for a faction. Can be `:human` (keyboard/mouse), `:ai` (decision function), `:remote` (network peer), or `:spectator` (observes, issues no orders). Bound to exactly one faction at game start. All controllers issue orders through the same path — no direct world mutation. When a controller disconnects, the faction goes idle (no orders issued). A new controller can be bound at runtime. AI controllers run as a system in the tick pipeline — they read live state and issue orders that apply next tick. AI intelligence for v1 is scripted (fixed build order with guards — checks world state before issuing orders). AI personality is data-driven (config table controls aggression, defense radius, resource ratios). In multiplayer, disconnected players get AI takeover (deterministic AI preserves lockstep).
+_Avoid_: player, input source
 
-### Project State
+**Entity**:
+A game object identified by a unique integer ID. Has components attached (position, health, kind, etc.).
+_Avoid_: unit, object, thing
 
-- **Location:** `/Users/jordan/Projects/Programming/aurelius-fennel/`
-- **Original Guile project:** `/Users/jordan/Projects/Programming/aurelius/`
-- **19 Fennel modules** compiled successfully
-- **26/26 tests passing**
-- **`lua-enet` compiled** — `lib/enet.so` built for macOS (LuaJIT ABI)
-- **File-based REPL wired** — `lib/stdio.fnl` polls `repl.in`/`repl.out`
-- **conf.lua fixed** — rewritten as valid Lua (was Fennel syntax)
-- **Git remote present**
+**Component**:
+Plain data attached to an entity. Types: position, owner, kind, health, carry, node, cooldown, producer, task. Stored in the world's component store, keyed by entity ID.
+_Avoid_: attribute, property, field
 
-### Remaining Work
+**World**:
+The entire mutable game state. Contains the component store, per-faction resources, ages, RNG, order queue, and event log. Two factions compete; the win condition is destroying all enemy Town Centres or attaining a special victory (e.g., building a wonder). A faction can concede at any time.
+_Avoid_: state, game state, environment
 
-1. ~~Fix 3 failing integration tests~~ ✓ (wrong entity IDs, missing attack orders, cond→if)
-2. ~~Compile/install `lua-enet` C extension~~ ✓ (macOS, see README for Linux/BSD/NixOS)
-3. ~~Wire up REPL~~ ✓ (file-based, see lib/stdio.fnl)
-4. **TCP REPL** — add luasocket-based TCP server to lib/stdio.fnl. Auto-detect luasocket, fall back to file I/O. Enables `telnet localhost 12345` for live game interaction without file fiddling.
-   - **Dependencies:** `luasocket` (compile via `luarocks install luasocket`, or bundle the `.so`)
-   - **Implementation:** When `pcall(require, "socket")` succeeds, bind a TCP server on `127.0.0.1:12345`. Accept connections, read lines, evaluate via `fennel.eval`, write results back. Non-blocking via `socket.select` poll in `love.update`.
-   - **Fallback:** If luasocket unavailable, current file I/O mode continues unchanged.
-   - **Security:** Listen on localhost only. No auth needed for single-player debugging.
-   - **Multiplayer note:** TCP REPL is for the host machine only. Remote players can't connect to it (and shouldn't — it's a debug tool, not a game protocol).
-5. Create Tiled maps (`.lua` export format)
-6. Replace placeholder sprites with real assets
-7. Build a lightweight relay server for internet P2P (when not using Tailscale)
+**Order** (also: Command):
+A player/decision input to the simulation. Orders-as-data: plain tables with a `:tag` field. Types: move, gather, attack, train, advance-age. The ONLY way to change the simulation. Both human and AI controllers can issue multiple orders per tick — fairness comes from decision quality, not order count.
+_Avoid_: command, instruction, input
 
-### Key Files
+**Tick**:
+One discrete time step of the simulation. Fixed-timestep, integer-counted. Systems run in fixed order each tick. The AI runs as a system within the tick pipeline, reading live state and issuing orders for the next tick.
+_Avoid_: frame, step, update
 
-| File | Purpose |
-|---|---|
-| `src/init.fnl` | LÖVE callbacks, game setup, keyboard shortcuts |
-| `src/world.fnl` | ECS store, spawn, snapshot, effective stats |
-| `src/orders.fnl` | Commands-as-data, issue/apply |
-| `src/sim.fnl` | Fixed-timestep tick loop |
-| `src/systems/*.fnl` | 5 game systems |
-| `src/render/*.fnl` | Isometric transforms, sprites, HUD, map |
-| `src/net/*.fnl` | Lockstep, command serialization, ENet host |
-| `test/*.fnl` | 11 test files |
-| `docs/` | ADRs, architecture, Fennel guide for Haskell devs |
+**Age**:
+A technology level (1, 2, or 3) that modifies unit stats via multipliers. Advancing costs resources and time.
+_Aavoid_: era, epoch, level
 
-### Gotchas / Notes
+**Resource**:
+Materials gathered and spent. Types: wood, stone, gold. Stored per-faction.
+_Avoid_: material, currency
 
-- Lua tables are 1-indexed; game logic uses 0-indexed players. Player data tables are offset by +1.
-- Fennel `match` needs a `_` catch-all pattern or "even number of pattern/body pairs" error.
-- Fennel `let` bindings are immutable; use `var` for mutable locals.
-- Fennel doesn't support method-call syntax `obj:method()` — use `(obj.method obj args)`.
-- `each [k v (ipairs t)]` gives index first, value second (swapped from直觉).
-- Forward references don't work in Fennel — define functions before use.
+**Task**:
+What an entity is currently doing. Types: idle, move, gather (with phases: to-node, gathering, to-drop), attack.
+_Avoid_: action, behaviour, state
+
+**Producer**:
+A building that trains units. Has a queue of unit types and a progress counter.
+_Avoid_: building, factory, spawner
+
+**Node**:
+A resource deposit on the map (tree, gold mine, stone mine). Has a resource type and depleting amount. Sits ON a terrain tile but IS NOT the tile. When depleted, the entity is removed — the underlying terrain remains.
+_Avoid_: resource node, deposit, mine
+
+**Terrain**:
+The static tile grid of the map. Determines walkability and visual background. Set at game start, never changes during gameplay. Entities (units, buildings, nodes) sit on top of terrain tiles.
+_Avoid_: map, ground, tile (use "tile" only when referring to a specific grid cell)
