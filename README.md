@@ -303,6 +303,51 @@ aurelius-fennel/
 └── Makefile                # Build system
 ```
 
+## Reading List
+
+### RTS Game Design
+
+- [Age of Empires II: Design Notes](https://www.wildfiregames.com/blog/2023/01/03/age-of-empires-ii-design-notes/) — original design decisions behind AoE2's gameplay loop
+- [Game Programming Patterns (Nystrom)](https://gameprogrammingpatterns.com/) — free online book covering ECS, game loops, update methods. Chapters on updating and component patterns are directly applicable.
+- [Rules of Play (Salen & Zimmerman)](https://mitpress.mit.edu/9780262240453/rules-of-play/) — game design theory. Useful for understanding win conditions, player agency, and game state.
+- [The Art of Strategy (Dixit & Nalebuff)](https://www.amazon.com/Art-Strategy-Thinking-Like-Economist/dp/0393337170) — strategic thinking applicable to AI design.
+
+### Fennel and Lua
+
+- [Fennel Programming Language](https://fennel-lang.org/) — official docs, tutorial, and reference
+- [Fennel Guide for Haskell Devs](docs/fennel-for-haskell-devs.md) — project-specific Fennel guide
+- [Programming in Lua (4th ed.)](https://www.lua.org/pil/) — the definitive Lua reference. Essential for understanding the language Fennel compiles to.
+- [Lua Reference Manual](https://www.lua.org/manual/5.4/) — official Lua docs. Lua tables and metatables are the foundation of Fennel's data structures.
+
+### LÖVE Framework
+
+- [LÖVE Wiki](https://love2d.org/wiki/Main_Page) — official docs for every LÖVE API
+- [LÖVE Tutorials](https://love2d.org/wiki/Category:Tutorials) — community tutorials for getting started
+- [How to Make LÖVE](https://0x72.itch.io/lovetutorial) — free e-book covering LÖVE basics
+
+### ECS Architecture
+
+- [Entity Component System (Evolve)](https://evolvegame.com/developer-blog/entity-component-system/) — how Evolve uses ECS in production
+- [ECS on Wikipedia](https://en.wikipedia.org/wiki/Entity_component_system) — overview of the pattern
+- [Architecting ECS for Games (GDC)](https://www.gdcvault.com/) — search for ECS talks from GDC (many are free)
+
+### Deterministic Lockstep Networking
+
+- [Lockstep Networking for RTS Games (Glenn Fiedler)](https://gafferongames.com/) — the definitive resource on deterministic lockstep and state synchronization
+- [Deterministic Lockstep (Gabriel Gambetta)](https://www.gabrielgambetta.com/client-server-game-architecture.html) — client-server vs P2P for real-time games
+- [ENet Documentation](http://enet.bespin.org/) — the networking library this project uses
+- [lua-enet README](https://github.com/leafo/lua-enet) — Lua bindings for ENet
+
+### Procedural Generation
+
+- [Procedural Generation in Game Design (Feil & Pickover)](https://www.amazon.com/Procedural-Generation-Game-Design-Feil/dp/1498799191) — comprehensive textbook on PCG techniques
+- [Perlin Noise (Ken Perlin)](https://cs.nyu.edu/~perlin/) — original Perlin noise implementation and papers
+
+### AI for Games
+
+- [AI for Games (Millington)](https://www.amazon.com/AI-Games-Ian-Millington/dp/0123944430) — the standard textbook on game AI. Covers pathfinding, decision trees, FSMs, and scripting.
+- [Game AI Pro (Series)](https://www.gameaipro.com/) — free online collection of Game AI papers from industry professionals
+
 ## License
 
 AGPL v3.0
