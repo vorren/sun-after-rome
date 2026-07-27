@@ -25,8 +25,8 @@
     (for [_ 1 steps]
       (let [x p.x y p.y]
         (when (not (and (= x tx) (= y ty)))
-          (set p.x (+ x (sgn (- tx x))))
-          (set p.y (+ y (sgn (- ty y)))))))))
+          (set p.x (math.max 0 (math.min (- w.width 1) (+ x (sgn (- tx x))))))
+          (set p.y (math.max 0 (math.min (- w.height 1) (+ y (sgn (- ty y)))))))))))
 
 (fn at-tile? [w eid tx ty]
   (let [p (world.world-get w eid :position)]
