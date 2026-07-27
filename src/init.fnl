@@ -13,6 +13,8 @@
 
 (var game-world nil)
 (var terrain nil)
+(var music nil)
+(var music-volume 0.3)
 
 (fn spawn-initial-entities [w]
   (world.spawn! w :town-centre {:owner 0 :x 3 :y 3})
@@ -40,6 +42,14 @@
     (when ok
       (repl.init-env! game-world)
       (repl.start)))
+  ;; Load background music (optional)
+  (let [(ok source) (pcall love.audio.newSource "assets/music/sar.ogg" "stream")]
+    (when ok
+      (set music source)
+      (music:setLooping true)
+      (music:setVolume music-volume)
+      (love.audio.play music)))
+  ;; Set love.update ticks
   (print "Sun After Rome loaded. Press F5 to reset, click to select."))
 
 (var accumulator 0)
@@ -81,6 +91,13 @@
 (fn love.mousepressed [x y button]
   (hud.handle-click x y game-world button))
 
+(fn love.focus [focused]
+  (when music
+    (if focused
+        (music:play)
+        (love.audio.pause music))))
+
+;; Expose game-world for REPL access
 (fn get-world [] game-world)
 (fn get-terrain [] terrain)
 
