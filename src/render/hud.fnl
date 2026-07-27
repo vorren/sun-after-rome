@@ -98,9 +98,9 @@
               screen-x (+ sx offset-x)
               screen-y (+ sy offset-y)]
           (love.graphics.setColor 0.2 1 0.2 0.8)
-          (love.graphics.set-line-width 2)
+          (love.graphics.setLineWidth 2)
           (love.graphics.ellipse "line" screen-y screen-x (* tile-w 0.6) (* tile-h 0.6))
-          (love.graphics.set-line-width 1)
+          (love.graphics.setLineWidth 1)
           (love.graphics.setColor 1 1 1 1))))))
 
 (fn draw-hud [w]
