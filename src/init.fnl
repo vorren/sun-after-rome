@@ -112,7 +112,7 @@
 (fn love.focus [focused]
   (when music
     (if focused
-        (love.audio.resume music)
+        (music:play)
         (love.audio.pause music))))
 
 ;; Expose game-world for REPL access
