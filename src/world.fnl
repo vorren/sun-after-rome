@@ -24,7 +24,8 @@
      :rng (rng.make-rng (or seed 1))
      :orders []
      :log []
-     :next-id 1}))
+     :next-id 1
+     :controllers (let [c {}] (for [p 1 (or players 2)] (tset c p {:type :idle})) c)}))
 
 ;; Entity + component store
 (fn fresh-id! [w]
@@ -67,6 +68,13 @@
 (fn world-remove-entity! [w eid]
   (each [_ ct (ipairs component-types)]
     (tset (ctype-table w ct) eid nil)))
+
+;; Controllers (ADR-0015)
+(fn set-controller! [w p ctrl]
+  (tset w.controllers (+ p 1) ctrl))
+
+(fn get-controller [w p]
+  (. w.controllers (+ p 1)))
 
 ;; Ages (ADR-0011) - defined early so effective-* can use them
 ;; Player indices are 0-based in game logic, 1-based in Lua tables
@@ -186,12 +194,14 @@
      :rng (rng.make-rng (rng.rng-state w.rng))
      :orders (copy-table w.orders)
      :log (copy-table w.log)
-     :next-id w.next-id}))
+     :next-id w.next-id
+     :controllers (copy-table w.controllers)}))
 
 {: make-world : fresh-id!
  : world-add! : world-get : world-has? : world-remove-component!
  : world-query : world-remove-entity! : world-entities
  : spawn!
+ : set-controller! : get-controller
  : player-age : set-player-age! : age-progress : set-age-progress!
  : effective-max-hp : effective-gather-rate : effective-damage
  : owner-of : resource-amount : add-resource! : can-afford? : pay!
