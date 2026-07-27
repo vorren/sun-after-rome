@@ -8,12 +8,27 @@
 (local movement (require :src.systems.movement))
 (local gather (require :src.systems.gather))
 (local combat (require :src.systems.combat))
+(local ai (require :src.ai.scripted))
+
+;; Controller dispatch (ADR-0015/0016): runs after apply-orders!, calls each
+;; faction's controller tick. AI controllers issue orders that apply next tick.
+(fn controller-dispatch! [w]
+  (for [p 0 (- w.num-players 1)]
+    (let [ctrl (world.get-controller w p)]
+      (when (and ctrl ctrl.tick)
+        (ctrl.tick w)))))
+
+;; AI takeover (ADR-0016): replace disconnected player's controller with deterministic AI.
+(fn take-player! [w p]
+  "Replace player P's controller with an AI takeover controller."
+  (world.set-controller! w p (ai.make-ai-takeover p)))
 
 ;; The ordered pipeline
 (var systems [])
 
 (fn init-systems! []
   (set systems [orders.apply-orders!
+                controller-dispatch!
                 production.production-system
                 age.age-system
                 movement.movement-system
@@ -37,4 +52,4 @@
 ;; Initialize on load
 (init-systems!)
 
-{: tick! : run! : systems : reset-systems!}
+{: tick! : run! : systems : reset-systems! : take-player!}
