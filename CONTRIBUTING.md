@@ -1,6 +1,6 @@
 # Contributing to Sun After Rome
 
-Thanks for interest in contributing. This guide covers what you need to get started.
+This is a private project. Contributions are by invitation only.
 
 ## Setup
 
@@ -9,7 +9,10 @@ Thanks for interest in contributing. This guide covers what you need to get star
 git clone git@github.com:vorren/sun-after-rome.git
 cd sun-after-rome
 
-# Install dependencies (macOS)
+# Option 1: Nix (recommended)
+nix develop    # enters dev shell with all deps
+
+# Option 2: Manual install (macOS)
 brew install love fennel lua luajit
 
 # Build and test
@@ -17,23 +20,13 @@ make build
 make test
 ```
 
-See README.md for Linux/BSD/NixOS setup instructions.
-
 ## Development workflow
 
-1. **Pick an issue** — check [GitHub Issues](https://github.com/vorren/sun-after-rome/issues) for `ready-for-agent` or `ready-for-human` labels.
+1. **Pick an issue** — check GitHub Issues for `ready-for-agent` or `ready-for-human` labels.
 2. **Create a branch** — `git checkout -b <ticket-slug>`
 3. **Make your changes** — see below for conventions.
 4. **Run tests** — `make test` (must pass before submitting).
 5. **Submit a PR** — describe what the issue asks for, link the issue.
-
-## Principles
-
-**KISS** — Keep It Simple, Stupid. Prefer the simplest solution that works. No abstraction until there's a second use case. No framework, no magic, no cleverness. If a 10-line function does the job, don't make it 50.
-
-**Determinism first** — Same seed + same orders = identical world. If you add randomness, it goes through `rng.fnl`. This is the hardest constraint — it enables lockstep multiplayer and replay.
-
-**Orders are data** — All simulation input goes through `world.orders`, never direct mutation. Human, AI, and network controllers all use the same path.
 
 ## Code conventions
 
@@ -60,7 +53,7 @@ src/
 
 - Tests live in `test/` as `*_test.fnl`.
 - Each test file returns a table of test functions (luaunit style).
-- Run with `make test` — all 26 tests must pass.
+- Run with `make test` — all 60 tests must pass.
 - Tests run with plain Lua (not LÖVE), so no `love.*` calls in tests.
 
 ### Content and stats
@@ -73,6 +66,14 @@ Unit/building stats live in `src/content.fnl`. When adding new units:
 ## Architecture decisions
 
 All significant architectural decisions are recorded as ADRs in `docs/adr/`. Read them before changing core systems. The domain glossary is in `CONTEXT.md` — use its vocabulary in code and issues.
+
+## Principles
+
+**KISS** — Keep It Simple, Stupid. Prefer the simplest solution that works. No abstraction until there's a second use case. No framework, no magic, no cleverness. If a 10-line function does the job, don't make it 50.
+
+**Determinism first** — Same seed + same orders = identical world. If you add randomness, it goes through `rng.fnl`. This is the hardest constraint — it enables lockstep multiplayer and replay.
+
+**Orders are data** — All simulation input goes through `world.orders`, never direct mutation. Human, AI, and network controllers all use the same path.
 
 ## Asking questions
 
