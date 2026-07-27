@@ -4,10 +4,10 @@
 (local world (require :src.world))
 (local sim (require :src.sim))
 (local orders (require :src.orders))
-(local movement (require :src.systems.movement))
 (local sprites (require :src.render.sprites))
 (local hud (require :src.render.hud))
 (local map (require :src.render.map))
+(local floating-text (require :src.render.floating-text))
 (local lockstep (require :src.net.lockstep))
 (local ai (require :src.ai.scripted))
 
@@ -34,7 +34,8 @@
   (set game-world (world.make-world {:width 24 :height 16 :players 2 :seed 42}))
   (spawn-initial-entities game-world)
   (world.set-controller! game-world 1 (ai.make-ai-controller 1))
-  (set terrain (map.init-map game-world 42)))
+  (set terrain (map.init-map game-world 42))
+  (floating-text.clear-texts))
 
 (fn love.load []
   (setup-world)
@@ -63,6 +64,7 @@
   (while (>= accumulator tick-dt)
     (set accumulator (- accumulator tick-dt))
     (sim.tick! game-world))
+  (floating-text.update-texts dt)
   (let [(ok repl) (pcall require "lib.stdio")]
     (when ok (repl.poll))))
 
@@ -71,6 +73,7 @@
     (map.draw-terrain terrain game-world))
   (sprites.draw-world game-world)
   (hud.draw-selection-highlight game-world)
+  (floating-text.draw-texts game-world)
   (hud.draw-hud game-world))
 
 (fn love.keypressed [key]

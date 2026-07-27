@@ -4,6 +4,7 @@
 (local content (require :src.content))
 (local iso (require :src.render.iso))
 (local orders (require :src.orders))
+(local floating-text (require :src.render.floating-text))
 
 (var selected-eid nil)
 
@@ -50,15 +51,18 @@
 (fn issue-gather [w eid target]
   (let [node-pos (world.world-get w target :position)]
     (when node-pos
-      (orders.issue! w (orders.gather eid target)))))
+      (orders.issue! w (orders.gather eid target))
+      (floating-text.add-text w eid "Gather"))))
 
 (fn issue-attack [w eid target]
   (let [target-pos (world.world-get w target :position)]
     (when target-pos
-      (orders.issue! w (orders.attack eid target)))))
+      (orders.issue! w (orders.attack eid target))
+      (floating-text.add-text w eid "Attack"))))
 
 (fn issue-move [w eid tx ty]
-  (orders.issue! w (orders.move eid tx ty)))
+  (orders.issue! w (orders.move eid tx ty))
+  (floating-text.add-text w eid "Move"))
 
 (fn handle-right-click [x y w]
   (when selected-eid
