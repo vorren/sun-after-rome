@@ -8,13 +8,10 @@
 (local hud (require :src.render.hud))
 (local map (require :src.render.map))
 (local floating-text (require :src.render.floating-text))
-(local lockstep (require :src.net.lockstep))
 (local ai (require :src.ai.scripted))
 
 (var game-world nil)
 (var terrain nil)
-(var music nil)
-(var music-volume 0.3)
 
 (fn spawn-initial-entities [w]
   (world.spawn! w :town-centre {:owner 0 :x 3 :y 3})
@@ -39,18 +36,11 @@
 
 (fn love.load []
   (setup-world)
+  (hud.init-cursors)
   (let [(ok repl) (pcall require "lib.stdio")]
     (when ok
       (repl.init-env! game-world)
       (repl.start)))
-  ;; Load background music (optional)
-  (let [(ok source) (pcall love.audio.newSource "assets/music/sar.ogg" "stream")]
-    (when ok
-      (set music source)
-      (music:setLooping true)
-      (music:setVolume music-volume)
-      (love.audio.play music)))
-  ;; Set love.update ticks
   (print "Sun After Rome loaded. Press F5 to reset, click to select."))
 
 (var accumulator 0)
@@ -73,6 +63,7 @@
     (map.draw-terrain terrain game-world))
   (sprites.draw-world game-world)
   (hud.draw-selection-highlight game-world)
+  (hud.draw-drag-rect)
   (floating-text.draw-texts game-world)
   (hud.draw-hud game-world))
 
@@ -80,6 +71,7 @@
   (match key
     :f5 (do
           (setup-world)
+          (hud.init-cursors)
           (let [(ok repl) (pcall require "lib.stdio")]
             (when ok (repl.init-env! game-world)))
           (print "World reset."))
@@ -96,8 +88,24 @@
     :space (orders.issue! game-world (orders.advance-age 0))
     :b (orders.issue! game-world (orders.advance-age 1))))
 
-(fn love.mousepressed [x y button]
-  (hud.handle-click x y game-world button))
+(fn love.mousepressed [x y button shift]
+  (hud.handle-click x y game-world button shift)
+  (when (and (= button 1) (not (hud.get-command-mode)))
+    (hud.set-drag-start x y)))
+
+(fn love.mousereleased [x y button]
+  (when (and (= button 1) (hud.get-drag-start))
+    (let [ds (hud.get-drag-start)]
+      (when (or (not= x ds.x) (not= y ds.y))
+        (let [entities (hud.entities-in-rect game-world ds.x ds.y x y)]
+          (when (> (# entities) 0)
+            (hud.clear-drag-start)
+            (each [_ eid (ipairs entities)]
+              (hud.add-to-selection eid))))))
+    (hud.clear-drag-start)))
+
+(fn love.mousemoved [x y]
+  (hud.handle-mouse-move x y game-world))
 
 (fn love.focus [focused]
   (when music
@@ -105,7 +113,6 @@
         (music:play)
         (love.audio.pause music))))
 
-;; Expose game-world for REPL access
 (fn get-world [] game-world)
 (fn get-terrain [] terrain)
 
