@@ -5,6 +5,8 @@
 
 An Age of Empires II-style deterministic RTS built with **Fennel** and **LÖVE**.
 
+> **Private repository.** This project is not publicly available. For access, contact the maintainer.
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -34,58 +36,43 @@ Sun After Rome implements the core AoE2 gameplay loop: **gather resources, train
 ## Quick Start
 
 ```bash
-# Clone and run
+# Clone (requires access)
 git clone git@github.com:vorren/sun-after-rome.git
 cd sun-after-rome
+
+# Option 1: Nix (recommended)
+nix develop    # enters dev shell with all deps
+love .         # run game
+
+# Option 2: Manual
+make build
 make run
 ```
 
 ## Requirements
 
-- [LÖVE](https://love2d.org/) 11.4+
-- [Fennel](https://fennel-lang.org/) 1.6+
-- [Lua](https://www.lua.org/) 5.4+ or [LuaJIT](https://luajit.org/) 2.1+
+- [LÖVE](https://love2d.org/) 11.4+ (installed externally)
+- [Nix](https://nixos.org/) (recommended) or manual install of Fennel, Lua, ENet
 
-### macOS
+### Nix (recommended)
+
+```bash
+nix develop    # provides: fennel, luajit, enet, gcc, pkg-config, lua5_4
+love .         # run game (love must be installed externally)
+```
+
+### macOS (manual)
 
 ```bash
 brew install love fennel lua luajit
 make run
 ```
 
-### NixOS
-
-```bash
-nix-shell -p love fennel lua luajit enet cmake gcc
-make run
-```
-
-### FreeBSD
-
-```bash
-pkg install love2d fennel lua54 luajit enet cmake
-make run
-```
-
 ### Building the ENet Binding (optional, for multiplayer)
 
-The ENet C library must be installed before compiling the Lua binding.
+In the Nix dev shell, `make enet` works automatically — paths are set by `shellHook`.
 
-```bash
-# macOS (Homebrew)
-brew install enet
-gcc -O2 -fPIC -shared -o lib/enet.so /tmp/lua-enet/enet.c \
-  -I/opt/homebrew/include/luajit-2.1 \
-  -I/opt/homebrew/include \
-  -L/opt/homebrew/lib -lenet -lluajit-5.1 -lm
-
-# NixOS — enet is in the nix-shell, check nix-build output for paths
-# FreeBSD
-gcc -O2 -fPIC -shared -o lib/enet.so /tmp/lua-enet/enet.c \
-  -I/usr/local/include/luajit-2.1 \
-  -I/usr/local/include \
-  -L/usr/local/lib -lenet -lluajit-5.1 -lm
-```
+For manual installs, see the Makefile for required flags.
 
 If the ENet binding cannot be found at runtime, networking is disabled — the game still works in single-player.
 
