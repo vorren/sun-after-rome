@@ -1,5 +1,8 @@
--- Simple pretty-printer for Fennel/Lua values
--- Based on the fennelview concept
+-- fennelview.lua --- simple pretty-printer for Fennel/Lua values
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+-- Copyright (c) 2026 Jordan Firth
+-- Based on the fennelview concept from the Fennel project (MIT)
+
 local function fennelview(x, depth)
   depth = depth or 0
   local t = type(x)
