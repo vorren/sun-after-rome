@@ -3,106 +3,102 @@
 [![Tests](https://github.com/vorren/sun-after-rome/actions/workflows/test.yml/badge.svg)](https://github.com/vorren/sun-after-rome/actions/workflows/test.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-An Age of Empires II-style real-time strategy game built with **Fennel** and **LÖVE**.
+An Age of Empires II-style deterministic RTS built with **Fennel** and **LÖVE**.
 
-## What is this?
+## Table of Contents
 
-Sun After Rome is a small, deterministic RTS game implementing the core AoE2 gameplay loop: **gather resources, train units, advance through ages, and fight**. It features:
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+- [Requirements](#requirements)
+- [Building](#building)
+- [Controls](#controls)
+- [REPL](#repl)
+- [Architecture](#architecture)
+- [Multiplayer](#multiplayer)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [Reading List](#reading-list)
+- [License](#license)
+
+## Overview
+
+Sun After Rome implements the core AoE2 gameplay loop: **gather resources, train units, advance through ages, and fight**. Two factions compete on a procedurally generated isometric map.
 
 - **Deterministic simulation** — same seed + same commands = identical world
 - **Two-player LAN multiplayer** — lockstep simulation via ENet
 - **Isometric 2D rendering** — placeholder graphics with Tiled map support
 - **Live REPL** — modify game state at runtime via a Fennel REPL
 - **Procedural map generation** — Perlin noise terrain, or design maps in Tiled
+- **Scripted AI** — deterministic build-order AI with configurable personality
+
+## Quick Start
+
+```bash
+# Clone and run
+git clone git@github.com:vorren/sun-after-rome.git
+cd sun-after-rome
+make run
+```
 
 ## Requirements
 
 - [LÖVE](https://love2d.org/) 11.4+
-- [Fennel](https://fennel-lang.org/) (for building from source)
-- [Lua](https://www.lua.org/) or [LuaJIT](https://luajit.org/) (for running tests)
-- [LuaRocks](https://luarocks.org/) (for compiling the ENet binding)
+- [Fennel](https://fennel-lang.org/) 1.6+
+- [Lua](https://www.lua.org/) 5.4+ or [LuaJIT](https://luajit.org/) 2.1+
 
 ### macOS
 
 ```bash
 brew install love fennel lua luajit
-```
-
-### Debian/Ubuntu Linux
-
-```bash
-sudo apt install love fennel lua5.4 liblua5.4-dev luajit libluajit-5.1-dev
-# Build libenet from source (not in most distro repos):
-sudo apt install cmake build-essential
-git clone https://github.com/lsalzman/enet.git /tmp/enet
-cd /tmp/enet && mkdir build && cd build
-cmake .. && make && sudo make install
-sudo ldconfig
-```
-
-### Arch Linux
-
-```bash
-sudo pacman -S love fennel lua luajit enet cmake
+make run
 ```
 
 ### NixOS
 
 ```bash
 nix-shell -p love fennel lua luajit enet cmake gcc
+make run
 ```
 
 ### FreeBSD
 
 ```bash
 pkg install love2d fennel lua54 luajit enet cmake
+make run
 ```
 
-### Building the ENet Binding
+### Building the ENet Binding (optional, for multiplayer)
 
 The ENet C library must be installed before compiling the Lua binding.
 
 ```bash
-# Clone and build lua-enet
-git clone https://github.com/leafo/lua-enet.git /tmp/lua-enet
-cd /tmp/lua-enet
+# macOS (Homebrew)
+brew install enet
+gcc -O2 -fPIC -shared -o lib/enet.so /tmp/lua-enet/enet.c \
+  -I/opt/homebrew/include/luajit-2.1 \
+  -I/opt/homebrew/include \
+  -L/opt/homebrew/lib -lenet -lluajit-5.1 -lm
 
-# Compile for LÖVE's LuaJIT ABI (Linux/macOS/FreeBSD):
-gcc -O2 -fPIC -shared -o enet.so enet.c \
-  -I/path/to/luajit/include \
-  -I/path/to/enet/include \
-  -L/path/to/lib \
-  -lenet -lluajit-5.1 -lm
-
-# Copy to project
-cp enet.so /path/to/aurelius-fennel/lib/
-
-# On Linux, LÖVE also searches for .so in lib/ via LUA_CPATH
+# NixOS — enet is in the nix-shell, check nix-build output for paths
+# FreeBSD
+gcc -O2 -fPIC -shared -o lib/enet.so /tmp/lua-enet/enet.c \
+  -I/usr/local/include/luajit-2.1 \
+  -I/usr/local/include \
+  -L/usr/local/lib -lenet -lluajit-5.1 -lm
 ```
-
-**Platform-specific notes:**
-
-| Platform | LUAJIT include path | ENet library |
-|---|---|---|
-| macOS (Homebrew) | `/opt/homebrew/include/luajit-2.1` | `/opt/homebrew/lib/libenet.a` |
-| Linux (Debian) | `/usr/include/luajit-2.1` | `/usr/local/lib/libenet.so` |
-| Linux (Arch) | `/usr/include/luajit-2.1` | `/usr/lib/libenet.so` |
-| NixOS | Check `nix-build` output for `luajit` | Check `nix-build` output for `enet` |
-| FreeBSD | `/usr/local/include/luajit-2.1` | `/usr/local/lib/libenet.so` |
 
 If the ENet binding cannot be found at runtime, networking is disabled — the game still works in single-player.
 
-## Quick Start
+## Building
 
 ```bash
-# Run the game
-make run
-
-# Or directly
-love .
+make build    # AOT compile Fennel to Lua
+make test     # Run the test suite (60 tests)
+make clean    # Remove compiled output
+make enet     # Compile the ENet binding (requires headers)
 ```
 
-### Controls
+## Controls
 
 | Key | Action |
 |-----|--------|
@@ -112,55 +108,39 @@ love .
 | `4` | Train Archer (Barracks) |
 | `A` | Advance Age (Player 0) |
 | `B` | Advance Age (Player 1) |
+| `Left Click` | Select entity |
 | `F5` | Reset world |
-| `Click` | Select entity |
 | `Escape` | Quit |
 
-## Building
+## REPL
 
-```bash
-# AOT compile Fennel to Lua (faster startup)
-make build
+The game includes a file-based Fennel REPL for inspecting and modifying game state at runtime.
 
-# Run tests
-make test
-
-# Clean compiled files
-make clean
-```
-
-## Live REPL
-
-The game includes a file-based Fennel REPL for inspecting and modifying game state at runtime. Start the game, then send expressions from another terminal.
-
-### Terminal usage
+### Terminal
 
 ```bash
 # Start the game
 love .
 
-# In another terminal, use the helper script
+# In another terminal
 ./repl.sh
 
-# Or manually:
-echo '(pp (world.world-query game-world :kind))' > repl.in
+# Or manually
+echo '(world.resource-amount game-world 0 :wood)' > repl.in
 cat repl.out
 ```
 
-### Emacs usage
-
-**Option 1: Shell buffer with repl.sh (no extra packages)**
+### Emacs
 
 ```elisp
 ;; M-x shell — run repl.sh in a shell buffer
-;; Or create a dedicated REPL buffer:
 (defun sar-repl ()
   "Open a Sun After Rome REPL buffer."
   (interactive)
   (let ((buf (make-comint "sar-repl" "./repl.sh")))
     (pop-to-buffer buf)))
 
-;; Send a region to the REPL:
+;; Send a region to the REPL
 (defun sar-send-region (start end)
   "Send the active region to the SAR REPL."
   (interactive "r")
@@ -169,21 +149,32 @@ cat repl.out
       (comint-send-string (get-buffer-process (current-buffer))
                           (concat code "\n")))))
 
-;; Bind it:
 (global-set-key (kbd "C-c C-r") 'sar-send-region)
 ```
 
-**Option 2: Fennel mode + comint (if using fennel-mode)**
+### Vim / Neovim
 
-```elisp
-;; In your init.el, fennel-mode can send code to a comint buffer:
-(require 'fennel-mode)
+```vim
+" Terminal mode — run repl.sh in a terminal split
+command! SARRepl terminal ./repl.sh
 
-;; Bind fennel-send-last-sexp to send the expression before point:
-(define-key fennel-mode-map (kbd "C-c C-e") 'fennel-send-last-sexp)
+" Send current line to the REPL
+function! SARSendLine()
+  let l:line = getline('.')
+  call chansend(b:terminal_job_id, l:line . "\n")
+endfunction
+
+" Send visual selection to the REPL
+function! SARSendSelection() range
+  let l:lines = getline(a:firstline, a:lastline)
+  call chansend(b:terminal_job_id, l:lines)
+endfunction
+
+nnoremap <leader>r :call SARSendLine()<CR>
+vnoremap <leader>r :call SARSendSelection()<CR>
 ```
 
-### Example REPL sessions
+### Example REPL Sessions
 
 ```fennel
 ;; Inspect all entities
@@ -204,9 +195,6 @@ cat repl.out
     (when (and owner (= owner.player 1))
       (world.world-remove-entity! game-world pair.eid))))
 
-;; Check current tick
-game-world.tick
-
 ;; Force-advance player 0 to age 3
 (world.set-player-age! game-world 0 3)
 ```
@@ -223,11 +211,12 @@ The game uses an **Entity-Component-System (ECS)** architecture:
 ### System Pipeline (each tick)
 
 1. `apply-orders!` — drain command queue, translate to entity tasks
-2. `production` — buildings advance training queues, spawn units
-3. `age` — faction age countdowns tick down
-4. `movement` — units step toward destinations
-5. `gather` — villagers harvest, carry, deposit
-6. `combat` — cooldowns tick, attacks resolve, deaths handled
+2. `controller-dispatch!` — AI controllers issue orders
+3. `production` — buildings advance training queues, spawn units
+4. `age` — faction age countdowns tick down
+5. `movement` — units step toward destinations
+6. `gather` — villagers harvest, carry, deposit
+7. `combat` — cooldowns tick, attacks resolve, deaths handled
 
 ### Network Model
 
@@ -238,31 +227,29 @@ Peer-to-peer **deterministic lockstep** via [lua-enet](https://github.com/leafo/
 - Same seed + same commands = identical worlds
 - No game state is sent over the network — only commands
 
-### Multiplayer Setup
+## Multiplayer
 
-**LAN:** Both players connect to the same local network. Host runs `love .`, client connects via the in-game menu.
+### LAN
 
-**Internet (via Tailscale):** Since neither player can port-forward, use [Tailscale](https://tailscale.com/) to create a virtual LAN:
+Both players connect to the same local network. Host runs `love .`, client connects via the in-game menu.
 
-1. Both players install Tailscale (free) and sign in
-2. Host runs `love .` — note the Tailscale IP shown in the Tailscale app
-3. Client connects to the host's Tailscale IP
-4. No port forwarding required — Tailscale handles NAT traversal
+### Internet (via Tailscale)
+
+Use [Tailscale](https://tailscale.com/) to create a virtual LAN — no port forwarding required:
 
 ```bash
 # Install Tailscale
-# macOS:
-brew install --cask tailscale
-# Linux:
-curl -fsSL https://tailscale.com/install.sh | sh
+brew install --cask tailscale   # macOS
+curl -fsSL https://tailscale.com/install.sh | sh  # Linux
 
-# Start Tailscale
+# Start and check IP
 tailscale up
-# Check your Tailscale IP
 tailscale ip -4
 ```
 
-Tailscale is free for up to 3 users and 100 devices. It creates a wireguard tunnel so both peers see each other as if on the same LAN.
+1. Both players install Tailscale and sign in
+2. Host runs `love .` — note the Tailscale IP
+3. Client connects to the host's Tailscale IP
 
 ## Project Structure
 
@@ -281,6 +268,9 @@ aurelius-fennel/
 │   ├── orders.fnl          # Commands-as-data
 │   ├── rng.fnl             # Deterministic PRNG
 │   ├── sim.fnl             # Fixed-timestep tick loop
+│   ├── ai/                 # AI controllers
+│   │   ├── scripted.fnl    # Scripted build-order AI
+│   │   └── personalities.fnl # Data-driven personality configs
 │   ├── systems/            # Game systems
 │   │   ├── age.fnl
 │   │   ├── combat.fnl
@@ -296,58 +286,54 @@ aurelius-fennel/
 │       ├── sprites.fnl     # Placeholder sprite rendering
 │       ├── map.fnl         # Terrain + Tiled integration
 │       └── hud.fnl         # HUD overlay
-├── test/                   # Test suite
-├── assets/                 # Maps, fonts, sprites
+├── test/                   # Test suite (60 tests)
+├── docs/
+│   ├── adr/                # Architecture Decision Records
+│   └── agents/             # Agent configuration
 ├── conf.lua                # LÖVE configuration
 ├── main.lua                # Fennel bootstrap
 └── Makefile                # Build system
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, workflow, and code conventions.
+
 ## Reading List
 
 ### RTS Game Design
 
-- [Age of Empires II: Design Notes](https://www.wildfiregames.com/blog/2023/01/03/age-of-empires-ii-design-notes/) — original design decisions behind AoE2's gameplay loop
-- [Game Programming Patterns (Nystrom)](https://gameprogrammingpatterns.com/) — free online book covering ECS, game loops, update methods. Chapters on updating and component patterns are directly applicable.
-- [Rules of Play (Salen & Zimmerman)](https://mitpress.mit.edu/9780262240453/rules-of-play/) — game design theory. Useful for understanding win conditions, player agency, and game state.
-- [The Art of Strategy (Dixit & Nalebuff)](https://www.amazon.com/Art-Strategy-Thinking-Like-Economist/dp/0393337170) — strategic thinking applicable to AI design.
+- [Age of Empires II: Design Notes](https://www.wildfiregames.com/blog/2023/01/03/age-of-empires-ii-design-notes/)
+- [Game Programming Patterns (Nystrom)](https://gameprogrammingpatterns.com/) — free online book, ECS and game loops chapters
+- [Rules of Play (Salen & Zimmerman)](https://mitpress.mit.edu/9780262240453/rules-of-play/) — game design theory
 
 ### Fennel and Lua
 
-- [Fennel Programming Language](https://fennel-lang.org/) — official docs, tutorial, and reference
-- [Fennel Guide for Haskell Devs](docs/fennel-for-haskell-devs.md) — project-specific Fennel guide
-- [Programming in Lua (4th ed.)](https://www.lua.org/pil/) — the definitive Lua reference. Essential for understanding the language Fennel compiles to.
-- [Lua Reference Manual](https://www.lua.org/manual/5.4/) — official Lua docs. Lua tables and metatables are the foundation of Fennel's data structures.
+- [Fennel Programming Language](https://fennel-lang.org/) — official docs and tutorial
+- [Programming in Lua (4th ed.)](https://www.lua.org/pil/) — definitive Lua reference
+- [Lua Reference Manual](https://www.lua.org/manual/5.4/) — official Lua docs
 
 ### LÖVE Framework
 
-- [LÖVE Wiki](https://love2d.org/wiki/Main_Page) — official docs for every LÖVE API
-- [LÖVE Tutorials](https://love2d.org/wiki/Category:Tutorials) — community tutorials for getting started
-- [How to Make LÖVE](https://0x72.itch.io/lovetutorial) — free e-book covering LÖVE basics
+- [LÖVE Wiki](https://love2d.org/wiki/Main_Page) — official API docs
+- [How to Make LÖVE](https://0x72.itch.io/lovetutorial) — free e-book
 
 ### ECS Architecture
 
-- [Entity Component System (Evolve)](https://evolvegame.com/developer-blog/entity-component-system/) — how Evolve uses ECS in production
-- [ECS on Wikipedia](https://en.wikipedia.org/wiki/Entity_component_system) — overview of the pattern
-- [Architecting ECS for Games (GDC)](https://www.gdcvault.com/) — search for ECS talks from GDC (many are free)
+- [Entity Component System (Evolve)](https://evolvegame.com/developer-blog/entity-component-system/)
+- [ECS on Wikipedia](https://en.wikipedia.org/wiki/Entity_component_system)
 
 ### Deterministic Lockstep Networking
 
-- [Lockstep Networking for RTS Games (Glenn Fiedler)](https://gafferongames.com/) — the definitive resource on deterministic lockstep and state synchronization
-- [Deterministic Lockstep (Gabriel Gambetta)](https://www.gabrielgambetta.com/client-server-game-architecture.html) — client-server vs P2P for real-time games
-- [ENet Documentation](http://enet.bespin.org/) — the networking library this project uses
-- [lua-enet README](https://github.com/leafo/lua-enet) — Lua bindings for ENet
-
-### Procedural Generation
-
-- [Procedural Generation in Game Design (Feil & Pickover)](https://www.amazon.com/Procedural-Generation-Game-Design-Feil/dp/1498799191) — comprehensive textbook on PCG techniques
-- [Perlin Noise (Ken Perlin)](https://cs.nyu.edu/~perlin/) — original Perlin noise implementation and papers
+- [Lockstep Networking (Glenn Fiedler)](https://gafferongames.com/)
+- [Deterministic Lockstep (Gabriel Gambetta)](https://www.gabrielgambetta.com/client-server-game-architecture.html)
+- [ENet Documentation](http://enet.bespin.org/)
 
 ### AI for Games
 
-- [AI for Games (Millington)](https://www.amazon.com/AI-Games-Ian-Millington/dp/0123944430) — the standard textbook on game AI. Covers pathfinding, decision trees, FSMs, and scripting.
-- [Game AI Pro (Series)](https://www.gameaipro.com/) — free online collection of Game AI papers from industry professionals
+- [AI for Games (Millington)](https://www.amazon.com/AI-Games-Ian-Millington/dp/0123944430)
+- [Game AI Pro (Series)](https://www.gameaipro.com/) — free online collection
 
 ## License
 
-AGPL v3.0
+[AGPL v3.0](LICENSE.md) — Copyright (c) 2026 Jordan Firth

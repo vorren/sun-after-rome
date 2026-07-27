@@ -27,6 +27,14 @@ See README.md for Linux/BSD/NixOS setup instructions.
 4. **Run tests** — `make test` (must pass before submitting).
 5. **Submit a PR** — describe what the issue asks for, link the issue.
 
+## Principles
+
+**KISS** — Keep It Simple, Stupid. Prefer the simplest solution that works. No abstraction until there's a second use case. No framework, no magic, no cleverness. If a 10-line function does the job, don't make it 50.
+
+**Determinism first** — Same seed + same orders = identical world. If you add randomness, it goes through `rng.fnl`. This is the hardest constraint — it enables lockstep multiplayer and replay.
+
+**Orders are data** — All simulation input goes through `world.orders`, never direct mutation. Human, AI, and network controllers all use the same path.
+
 ## Code conventions
 
 ### Fennel
