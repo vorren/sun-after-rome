@@ -15,9 +15,10 @@ jobs:
       - name: Install Fennel
         run: |
           sudo apt-get update
-          sudo apt-get install -y lua5.4 liblua5.4-dev
-          curl -sL https://fennel-lang.org/fennel.lua -o /usr/local/bin/fennel
+          sudo apt-get install -y lua5.4
+          curl -sL https://fennel-lang.org/downloads/fennel-1.6.1-x86_64 -o /usr/local/bin/fennel
           chmod +x /usr/local/bin/fennel
+          fennel --version
 
       - name: Build
         run: make build
