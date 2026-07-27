@@ -19,19 +19,78 @@ Sun After Rome is a small, deterministic RTS game implementing the core AoE2 gam
 
 - [LÖVE](https://love2d.org/) 11.4+
 - [Fennel](https://fennel-lang.org/) (for building from source)
-- [Lua](https://www.lua.org/) (for running tests)
+- [Lua](https://www.lua.org/) or [LuaJIT](https://luajit.org/) (for running tests)
+- [LuaRocks](https://luarocks.org/) (for compiling the ENet binding)
 
 ### macOS
 
 ```bash
-brew install love fennel lua
+brew install love fennel lua luajit
 ```
 
-### Linux (NixOS)
+### Debian/Ubuntu Linux
 
 ```bash
-nix-shell -p love fennel lua
+sudo apt install love fennel lua5.4 liblua5.4-dev luajit libluajit-5.1-dev
+# Build libenet from source (not in most distro repos):
+sudo apt install cmake build-essential
+git clone https://github.com/lsalzman/enet.git /tmp/enet
+cd /tmp/enet && mkdir build && cd build
+cmake .. && make && sudo make install
+sudo ldconfig
 ```
+
+### Arch Linux
+
+```bash
+sudo pacman -S love fennel lua luajit enet cmake
+```
+
+### NixOS
+
+```bash
+nix-shell -p love fennel lua luajit enet cmake gcc
+```
+
+### FreeBSD
+
+```bash
+pkg install love2d fennel lua54 luajit enet cmake
+```
+
+### Building the ENet Binding
+
+The ENet C library must be installed before compiling the Lua binding.
+
+```bash
+# Clone and build lua-enet
+git clone https://github.com/leafo/lua-enet.git /tmp/lua-enet
+cd /tmp/lua-enet
+
+# Compile for LÖVE's LuaJIT ABI (Linux/macOS/FreeBSD):
+gcc -O2 -fPIC -shared -o enet.so enet.c \
+  -I/path/to/luajit/include \
+  -I/path/to/enet/include \
+  -L/path/to/lib \
+  -lenet -lluajit-5.1 -lm
+
+# Copy to project
+cp enet.so /path/to/aurelius-fennel/lib/
+
+# On Linux, LÖVE also searches for .so in lib/ via LUA_CPATH
+```
+
+**Platform-specific notes:**
+
+| Platform | LUAJIT include path | ENet library |
+|---|---|---|
+| macOS (Homebrew) | `/opt/homebrew/include/luajit-2.1` | `/opt/homebrew/lib/libenet.a` |
+| Linux (Debian) | `/usr/include/luajit-2.1` | `/usr/local/lib/libenet.so` |
+| Linux (Arch) | `/usr/include/luajit-2.1` | `/usr/lib/libenet.so` |
+| NixOS | Check `nix-build` output for `luajit` | Check `nix-build` output for `enet` |
+| FreeBSD | `/usr/local/include/luajit-2.1` | `/usr/local/lib/libenet.so` |
+
+If the ENet binding cannot be found at runtime, networking is disabled — the game still works in single-player.
 
 ## Quick Start
 
@@ -97,6 +156,32 @@ Peer-to-peer **deterministic lockstep** via [lua-enet](https://github.com/leafo/
 - Same seed + same commands = identical worlds
 - No game state is sent over the network — only commands
 
+### Multiplayer Setup
+
+**LAN:** Both players connect to the same local network. Host runs `love .`, client connects via the in-game menu.
+
+**Internet (via Tailscale):** Since neither player can port-forward, use [Tailscale](https://tailscale.com/) to create a virtual LAN:
+
+1. Both players install Tailscale (free) and sign in
+2. Host runs `love .` — note the Tailscale IP shown in the Tailscale app
+3. Client connects to the host's Tailscale IP
+4. No port forwarding required — Tailscale handles NAT traversal
+
+```bash
+# Install Tailscale
+# macOS:
+brew install --cask tailscale
+# Linux:
+curl -fsSL https://tailscale.com/install.sh | sh
+
+# Start Tailscale
+tailscale up
+# Check your Tailscale IP
+tailscale ip -4
+```
+
+Tailscale is free for up to 3 users and 100 devices. It creates a wireguard tunnel so both peers see each other as if on the same LAN.
+
 ## Project Structure
 
 ```
@@ -104,7 +189,8 @@ aurelius-fennel/
 ├── lib/                    # Third-party libraries
 │   ├── fennel.lua          # Embedded Fennel compiler
 │   ├── fennelview.lua      # Pretty-printer
-│   └── luaunit.lua         # Test framework
+│   ├── luaunit.lua         # Test framework
+│   └── enet.so             # ENet binding (compiled, not in repo)
 ├── src/
 │   ├── init.fnl            # LÖVE callbacks
 │   ├── world.fnl           # Entity/component store

@@ -19,18 +19,26 @@ Ported Sun After Rome (AOE2-style RTS, formerly "Aurelius") from Guile Scheme to
 - **Location:** `/Users/jordan/Projects/Programming/aurelius-fennel/`
 - **Original Guile project:** `/Users/jordan/Projects/Programming/aurelius/`
 - **19 Fennel modules** compiled successfully
-- **23/26 tests passing** (3 integration tests need task setup fixes)
-- **No git remote** — needs one before push
-- **No `lua-enet`** — networking module exists but C extension not compiled
+- **26/26 tests passing**
+- **`lua-enet` compiled** — `lib/enet.so` built for macOS (LuaJIT ABI)
+- **File-based REPL wired** — `lib/stdio.fnl` polls `repl.in`/`repl.out`
+- **conf.lua fixed** — rewritten as valid Lua (was Fennel syntax)
+- **Git remote present**
 
 ### Remaining Work
 
-1. Fix 3 failing integration tests (knight-beats-archer, gather-deposits, training-produces-unit)
-2. Compile/install `lua-enet` C extension for LAN multiplayer
-3. Wire up `lib/stdio.fnl` REPL thread (LÖVE threading API)
-4. Create Tiled maps (`.lua` export format)
-5. Replace placeholder sprites with real assets
-6. Add remote git repo and push
+1. ~~Fix 3 failing integration tests~~ ✓ (wrong entity IDs, missing attack orders, cond→if)
+2. ~~Compile/install `lua-enet` C extension~~ ✓ (macOS, see README for Linux/BSD/NixOS)
+3. ~~Wire up REPL~~ ✓ (file-based, see lib/stdio.fnl)
+4. **TCP REPL** — add luasocket-based TCP server to lib/stdio.fnl. Auto-detect luasocket, fall back to file I/O. Enables `telnet localhost 12345` for live game interaction without file fiddling.
+   - **Dependencies:** `luasocket` (compile via `luarocks install luasocket`, or bundle the `.so`)
+   - **Implementation:** When `pcall(require, "socket")` succeeds, bind a TCP server on `127.0.0.1:12345`. Accept connections, read lines, evaluate via `fennel.eval`, write results back. Non-blocking via `socket.select` poll in `love.update`.
+   - **Fallback:** If luasocket unavailable, current file I/O mode continues unchanged.
+   - **Security:** Listen on localhost only. No auth needed for single-player debugging.
+   - **Multiplayer note:** TCP REPL is for the host machine only. Remote players can't connect to it (and shouldn't — it's a debug tool, not a game protocol).
+5. Create Tiled maps (`.lua` export format)
+6. Replace placeholder sprites with real assets
+7. Build a lightweight relay server for internet P2P (when not using Tailscale)
 
 ### Key Files
 

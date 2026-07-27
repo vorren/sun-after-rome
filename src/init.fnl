@@ -33,9 +33,10 @@
   (world.spawn! game-world :stone-mine {:x 15 :y 10})
   ;; Generate terrain
   (set terrain (map.init-map game-world 42))
-  ;; Start REPL thread
+  ;; Start REPL
   (let [(ok repl) (pcall require "lib.stdio")]
     (when ok
+      (repl.init-env! game-world)
       (repl.start)))
   ;; Set love.update ticks
   (print "Sun After Rome loaded. Press F5 to reset, click to select."))
@@ -53,7 +54,10 @@
   (while (>= accumulator tick-dt)
     (set accumulator (- accumulator tick-dt))
     ;; Tick simulation
-    (sim.tick! game-world)))
+    (sim.tick! game-world))
+  ;; Poll REPL input
+  (let [(ok repl) (pcall require "lib.stdio")]
+    (when ok (repl.poll))))
 
 (fn love.draw []
   ;; Draw terrain
@@ -82,6 +86,9 @@
           (world.spawn! game-world :gold-mine {:x 12 :y 8})
           (world.spawn! game-world :stone-mine {:x 15 :y 10})
           (set terrain (map.init-map game-world 42))
+          ;; Re-init REPL env with new world
+          (let [(ok repl) (pcall require "lib.stdio")]
+            (when ok (repl.init-env! game-world)))
           (print "World reset."))
     :escape (love.event.quit)
     ;; Quick commands

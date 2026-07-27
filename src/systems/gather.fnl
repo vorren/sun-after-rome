@@ -61,14 +61,14 @@
               cargo (world.world-get w v :carry)]
           (match t.phase
             :to-node
-            (cond
+            (if
               (not node) (go-idle! t)
               (movement.within? w v t.tx t.ty 1)
               (set t.phase :gathering)
               true (movement.step-toward! w v t.tx t.ty))
 
             :gathering
-            (cond
+            (if
               (not node)
               (if (> cargo.amount 0) (start-drop! w v t) (go-idle! t))
               true

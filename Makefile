@@ -3,6 +3,7 @@
 # Targets:
 #   run     - Launch the game
 #   build   - AOT compile all Fennel to Lua
+#   enet    - Compile lua-enet binding (requires libenet + LuaJIT headers)
 #   test    - Run the test suite
 #   clean   - Remove compiled output
 #   repl    - Launch LÖVE with REPL thread
@@ -10,13 +11,17 @@
 FENNEL ?= fennel
 LOVE ?= love
 LUAFENNEL := lib/fennel.lua
+LUAJIT_INC ?= /opt/homebrew/include/luajit-2.1
+ENET_INC ?= /opt/homebrew/include
+ENET_LIB ?= /opt/homebrew/lib
+LUAJIT_LIB ?= luajit-5.1
 
 SRC := $(shell find src -name '*.fnl')
 TEST := $(shell find test -name '*.fnl')
 SRC_LUA := $(SRC:%.fnl=%.lua)
 TEST_LUA := $(TEST:%.fnl=%.lua)
 
-.PHONY: all run build test clean repl help
+.PHONY: all run build enet test clean repl help
 
 all: build
 
@@ -32,22 +37,30 @@ build: $(SRC_LUA)
 	@mkdir -p $(dir $@)
 	$(FENNEL) --compile $< > $@
 
+## enet : Compile lua-enet binding (requires libenet + LuaJIT headers)
+enet: lib/enet.so
+
+lib/enet.so: /tmp/lua-enet/enet.c
+	gcc -O2 -fPIC -shared -o $@ $< \
+	  -I$(LUAJIT_INC) -I$(ENET_INC) \
+	  -L$(ENET_LIB) -l$(LUAJIT_LIB) -lenet -lm
+	@echo "enet: compiled lua-enet binding"
+
+/tmp/lua-enet/enet.c:
+	@echo "enet: cloning lua-enet..."
+	git clone --depth 1 https://github.com/leafo/lua-enet.git /tmp/lua-enet
+
 ## test : Run the test suite
-test: $(TEST_LUA)
+test: build $(TEST_LUA)
 	@echo "--- Running tests ---"
-	@fail=0; \
-	for t in test/*_test.lua; do \
-	  echo "--- $$t"; \
-	  LUA_PATH=";;./lib/?.lua;./?.lua;./?/init.lua" LUA_CPATH=";;./lib/?.so" lua $$t || fail=1; \
-	done; \
-	exit $$fail
+	LUA_PATH=";;./lib/?.lua;./?.lua;./?/init.lua" LUA_CPATH=";;./lib/?.so" lua test/run.lua
 
 test/%.lua: test/%.fnl $(LUAFENNEL)
 	$(FENNEL) --compile $< > $@
 
 ## clean : Remove compiled output
 clean:
-	rm -f src/*.lua src/**/*.lua test/*.lua
+	rm -f src/*.lua src/**/*.lua test/*_test.lua
 
 ## repl : Launch LÖVE (REPL thread starts automatically in love.load)
 repl:

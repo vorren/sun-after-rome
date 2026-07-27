@@ -14,7 +14,7 @@
      (world.add-resource! w 0 :gold 200)
      (world.add-resource! w 0 :stone 200)
      (let [before (# (world.world-entities w))]
-       (orders.issue! w (orders.train 2 :knight))
+        (orders.issue! w (orders.train 1 :knight))
        (sim.run! w (+ (content.train-time :knight) 5))
        (let [after (# (world.world-entities w))]
          (luaunit.assertTrue (> after before))))))}

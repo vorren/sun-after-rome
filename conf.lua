@@ -1,4 +1,9 @@
-(love.conf {:title "Sun After Rome"
-            :window {:width 1280 :height 720 :resizable true}
-            :version "11.4"
-            :modules {:joystick false :physics false}})
+function love.conf(t)
+  t.title = "Sun After Rome"
+  t.window.width = 1280
+  t.window.height = 720
+  t.window.resizable = true
+  t.version = "11.4"
+  t.modules.joystick = false
+  t.modules.physics = false
+end

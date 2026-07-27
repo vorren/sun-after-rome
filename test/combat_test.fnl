@@ -16,12 +16,14 @@
            d2 (combat.attack-damage w2 1 2)]
        (luaunit.assertEquals d1 d2))))
 
- :test-knight-beats-archer
+  :test-knight-beats-archer
  (fn []
-   (let [w (world.make-world {:seed 42})]
+   (let [w (world.make-world {:seed 42})
+         orders (require :src.orders)]
      (world.spawn! w :knight {:owner 0 :x 5 :y 5})
      (world.spawn! w :archer {:owner 1 :x 6 :y 5})
      ;; Entity 1 = knight, entity 2 = archer
+     (orders.issue! w (orders.attack 1 2))
      ;; Attack for 60 ticks
      (for [_ 1 60]
        (sim.tick! w))

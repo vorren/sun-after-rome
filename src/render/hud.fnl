@@ -15,11 +15,12 @@
   (love.graphics.print (.. "Tick: " w.tick) 10 30)
   ;; Player 1 resources
   (for [p 1 w.num-players]
-    (let [wood (world.resource-amount w p :wood)
-          food (world.resource-amount w p :food)
-          stone (world.resource-amount w p :stone)
-          gold (world.resource-amount w p :gold)
-          age (world.player-age w p)
+    (let [pl (- p 1)
+          wood (world.resource-amount w pl :wood)
+          food (world.resource-amount w pl :food)
+          stone (world.resource-amount w pl :stone)
+          gold (world.resource-amount w pl :gold)
+          age (world.player-age w pl)
           y (+ 50 (* (- p 1) 80))]
       (love.graphics.setColor 0.8 0.8 0.8)
       (love.graphics.print (.. "Player " p " (Age " age ")") 10 y)
@@ -30,7 +31,7 @@
       (love.graphics.setColor 0.6 0.6 0.6)
       (love.graphics.print (.. "Stone: " stone) 230 (+ y 18))
       ;; Age progress
-      (let [prog (world.age-progress w p)]
+      (let [prog (world.age-progress w pl)]
         (when prog
           (love.graphics.setColor 0.5 0.8 1)
           (love.graphics.print (.. "Advancing... " prog " ticks left") 10 (+ y 36))))))
