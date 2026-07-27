@@ -30,7 +30,7 @@
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = [
             pkgs.pkg-config
-            pkgs.fennel
+            pkgs.luaPackages.fennel
             pkgs.lua5_4
             pkgs.git
           ];
