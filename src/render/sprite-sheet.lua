@@ -39,11 +39,16 @@ local function load_sprite(path)
 end
 local function load_animation(directory, prefix, count)
   local sprites = {}
+  local loaded = 0
   for i = 1, count do
     local num = string.format("%03d", i)
     local path = (directory .. "/" .. prefix .. num .. ".png")
     local img = load_sprite(path)
     table.insert(sprites, img)
+    if img then loaded = loaded + 1 end
+  end
+  if loaded == 0 then
+    log.warn("sprite-sheet", "No sprites loaded from: " .. directory)
   end
   return sprites
 end
