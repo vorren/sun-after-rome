@@ -198,7 +198,8 @@
         gold (world.resource-amount w pl :gold)
         stone (world.resource-amount w pl :stone)
         age (world.player-age w pl)
-        prog (world.age-progress w pl)]
+        prog (world.age-progress w pl)
+        (screen-w screen-h) (love.graphics.getDimensions)]
 
     ;; Resource bar using UI module
     (ui.draw
@@ -289,7 +290,19 @@
     ;; Age advancement progress
     (when prog
       (love.graphics.setColor 0.5 0.8 1)
-      (love.graphics.print (.. "Advancing... " prog " ticks left") (* 10 s) (* 70 s)))))
+      (love.graphics.print (.. "Advancing... " prog " ticks left") (* 10 s) (* 70 s)))
+
+    ;; Win condition display
+    (let [win-condition (require :src.systems.win-condition)
+          winner (win-condition.get-winner)]
+      (when winner
+        (love.graphics.setColor 0.96 0.90 0.78)
+        (love.graphics.rectangle :fill (/ (- screen-w 400) 2) (/ (- screen-h 100) 2) 400 100)
+        (love.graphics.setColor 0.24 0.17 0.12)
+        (love.graphics.printf (.. "Player " (+ winner 1) " Wins!")
+                              (/ (- screen-w 400) 2) (+ (/ (- screen-h 100) 2) 20) 400 :center)
+        (love.graphics.printf "Press F5 to restart"
+                              (/ (- screen-w 400) 2) (+ (/ (- screen-h 100) 2) 50) 400 :center)))))
 
 (fn handle-click [x y w button shift]
   (if (= button 1)
