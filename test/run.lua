@@ -15,6 +15,7 @@ local tests = {
   "test.production_test",
   "test.ai_test",
   "test.hud_test",
+  "test.test-ui",
 }
 
 for _, mod in ipairs(tests) do

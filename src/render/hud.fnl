@@ -7,6 +7,10 @@
 (local floating-text (require :src.render.floating-text))
 (local sounds (require :src.audio.sounds))
 (local log (require :src.log))
+(local ui (require :src.render.ui))
+(local command-card (require :src.render.ui.command-card))
+(local production-queue (require :src.render.ui.production-queue))
+(local camera (require :src.render.camera))
 
 (var selected-eids [])
 (var command-mode nil)
@@ -65,7 +69,8 @@
     result))
 
 (fn tile-at-screen [screen-x screen-y]
-  (let [tile-w 64 tile-h 32 offset-x 640 offset-y 100
+  (let [tile-w 64 tile-h 32
+        (offset-x offset-y) (camera.get-offset)
         (raw-tx raw-ty) (iso.to-tile (- screen-x offset-x) (- screen-y offset-y) tile-w tile-h)]
     (values (math.floor (+ raw-tx 0.5))
             (math.floor (+ raw-ty 0.5)))))
@@ -149,7 +154,8 @@
     (let [pos (world.world-get w eid :position)
           kind (world.world-get w eid :kind)]
       (when (and pos kind)
-        (let [tile-w 64 tile-h 32 offset-x 640 offset-y 100
+        (let [tile-w 64 tile-h 32
+              (offset-x offset-y) (camera.get-offset)
               (sx sy) (iso.to-screen pos.x pos.y tile-w tile-h)
               screen-x (+ sx offset-x) screen-y (+ sy offset-y)]
           (love.graphics.setColor 0.2 1 0.2 0.8)
@@ -177,40 +183,104 @@
     (math.min (/ w 1280) (/ h 720))))
 
 (fn draw-hud [w]
-  (let [s (get-scale)]
-    (love.graphics.setColor 1 1 1)
-    (love.graphics.print "=== Sun After Rome ===" (* 10 s) (* 10 s))
-    (love.graphics.print (.. "Tick: " w.tick) (* 10 s) (* 30 s))
-    (for [p 1 w.num-players]
-      (let [pl (- p 1)
-            wood (world.resource-amount w pl :wood)
-            gold (world.resource-amount w pl :gold)
-            stone (world.resource-amount w pl :stone)
-            age (world.player-age w pl)
-            y (* (+ 50 (* (- p 1) 80)) s)]
-        (love.graphics.setColor 0.8 0.8 0.8)
-        (love.graphics.print (.. "Player " p " (Age " age ")") (* 10 s) y)
-        (love.graphics.setColor 0.4 0.8 0.2)
-        (love.graphics.print (.. "Wood: " wood) (* 10 s) (+ y (* 18 s)))
-        (love.graphics.setColor 0.8 0.8 0.3)
-        (love.graphics.print (.. "Gold: " gold) (* 120 s) (+ y (* 18 s)))
-        (love.graphics.setColor 0.6 0.6 0.6)
-        (love.graphics.print (.. "Stone: " stone) (* 230 s) (+ y (* 18 s)))
-        (let [prog (world.age-progress w pl)]
-          (when prog
-            (love.graphics.setColor 0.5 0.8 1)
-            (love.graphics.print (.. "Advancing... " prog " ticks left") (* 10 s) (+ y (* 36 s)))))))
-    (when (> (# selected-eids) 0)
-      (love.graphics.setColor 1 1 0)
-      (love.graphics.print (.. "Selected: " (# selected-eids) " units") (* 10 s) (* (- w.height 80) s))
-      (let [eid (. selected-eids 1)
-            kind (world.world-get w eid :kind)
-            task (world.world-get w eid :task)]
-        (when kind (love.graphics.print (.. "Type: " (tostring kind.tag)) (* 200 s) (* (- w.height 80) s)))
-        (when task (love.graphics.print (.. "Task: " (tostring task.kind)) (* 400 s) (* (- w.height 80) s)))))
-    (when command-mode
-      (love.graphics.setColor 1 0.5 0)
-      (love.graphics.print (.. "Mode: " (string.upper (tostring command-mode)) " - click target") (* 10 s) (* (- w.height 60) s)))))
+  (let [s (get-scale)
+        pl 0
+        wood (world.resource-amount w pl :wood)
+        gold (world.resource-amount w pl :gold)
+        stone (world.resource-amount w pl :stone)
+        age (world.player-age w pl)
+        prog (world.age-progress w pl)]
+
+    ;; Resource bar using UI module
+    (ui.draw
+      (ui.root {}
+        ;; Empire status strip
+        {:type :panel
+         :x :top :y :left
+         :w 400 :h (* 50 s)
+         :dir :horiz :gap (* 12 s) :pad (* 8 s)
+         :alpha 0.85
+         :children
+         [{:type :label
+           :x 0 :y 0
+           :text (.. "Age " (tostring age))
+           :font :md :color :gold}
+          {:type :label
+           :x 0 :y 0
+           :text (.. "Wood: " wood)
+           :font :md :color :sage}
+          {:type :label
+           :x 0 :y 0
+           :text (.. "Gold: " gold)
+           :font :md :color :gold}
+          {:type :label
+           :x 0 :y 0
+           :text (.. "Stone: " stone)
+           :font :md :color :brown-light}]}
+
+        ;; Selection context
+        (when (> (# selected-eids) 0)
+          (let [eid (. selected-eids 1)
+                kind (world.world-get w eid :kind)
+                task (world.world-get w eid :task)
+                health (world.world-get w eid :health)
+                stats (when kind (content.kind-stats kind.tag))
+                max-hp (when stats stats.max-hp)]
+            {:type :panel
+             :x :left :y :bottom-110
+             :w 300 :h 100
+             :pad (* 10 s)
+             :children
+             [{:type :label
+               :x 0 :y 0
+               :text (.. "Selected: " (# selected-eids) " units")
+               :font :lg :color :gold}
+              (when kind
+                {:type :label
+                 :x 0 :y (* 20 s)
+                 :text (.. "Type: " (tostring kind.tag))
+                 :font :md :color :brown})
+              (when task
+                {:type :label
+                 :x 0 :y (* 38 s)
+                 :text (.. "Task: " (tostring task.kind))
+                 :font :md :color :brown-light})
+              (when (and health max-hp)
+                {:type :bar
+                 :x 0 :y (* 56 s)
+                 :w 280 :h (* 12 s)
+                 :value health.hp :max max-hp
+                 :fill :gold :bg :brown})]}))
+
+        ;; Command card
+        (command-card.build w selected-eids
+          (fn [cmd]
+            (if cmd.train
+                (log.info :command-card (.. "Training " cmd.train))
+                (do
+                  (hud.set-command-mode cmd.mode)
+                  (log.debug :command-card (.. "Command mode: " cmd.mode))))))
+
+        ;; Production queue
+        (production-queue.build w selected-eids)
+
+        ;; Command mode hint
+        (when command-mode
+          {:type :panel
+           :x :left :y :bottom-60
+           :w 300 :h (* 30 s)
+           :pad (* 8 s)
+           :alpha 0.9
+           :children
+           [{:type :label
+             :x 0 :y 0
+             :text (.. (string.upper (tostring command-mode)) " - click target")
+             :font :md :color :gold}]})))
+
+    ;; Age advancement progress
+    (when prog
+      (love.graphics.setColor 0.5 0.8 1)
+      (love.graphics.print (.. "Advancing... " prog " ticks left") (* 10 s) (* 70 s)))))
 
 (fn handle-click [x y w button shift]
   (if (= button 1)

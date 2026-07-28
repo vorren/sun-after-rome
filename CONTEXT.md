@@ -55,3 +55,57 @@ _Avoid_: resource node, deposit, mine
 **Terrain**:
 The static tile grid of the map. Determines walkability and visual background. Set at game start, never changes during gameplay. Entities (units, buildings, nodes) sit on top of terrain tiles.
 _Avoid_: map, ground, tile (use "tile" only when referring to a specific grid cell)
+
+## Design System
+
+**Design System**:
+The complete set of principles, primitives, and rules that govern how Sun After Rome looks, feels, and communicates. Covers visual identity, interaction patterns, information hierarchy, animation, and feedback. The design system answers "how does the player *feel* and *understand* the game."
+_Avoid_: style guide, theme, visual design
+
+**Expansion** (core feeling):
+The primary player feeling: "I'm building something growing and powerful." Every design decision serves this. The world should fill with life as the player grows. More units, more movement, more buildings, more animation. The UI stays clean and lets the world speak.
+_Avoid_: power, progression, growth (use "expansion" for the feeling specifically)
+
+**Panel**:
+A bounded UI region with background, border, padding. The fundamental container. Hand-drawn style: visible borders, warm fills, parchment texture. Everything lives inside panels.
+_Avoid_: window, frame, container
+
+**Label**:
+UI text with a font, color, alignment. The font module provides small/medium/large sizes. Functional, not decorative.
+_Avoid_: text, heading, caption
+
+**Icon**:
+A sprite or drawn symbol representing a resource, unit type, or age. Small, clear, scannable. Used in command cards, resource displays, and production queues.
+_Avoid_: symbol, glyph, image
+
+**Button**:
+A panel + label + click handler. Responsive and snappy: instant visual feedback (depress, highlight, glow). The interactive primitive.
+_Avoid_: control, widget, control
+
+**Bar**:
+A horizontal fill indicator. Health bars, resource counters, progress meters. The "expansion" visual — bars fill as you grow.
+_Avoid_: meter, gauge, progress bar (use "bar" for brevity)
+
+**Empire Status**:
+The thin strip of resource bars and age indicator, always visible but never competing with the world. Shows wood, food, gold, stone, and current age. Minimal, scannable, always present.
+_Avoid_: resource panel, top bar, status bar
+
+**Selection Context**:
+The panel that appears when a unit or building is selected. Shows what it can do — command card, health, production queue. Appears on demand, disappears when not needed.
+_Avoid_: selection panel, unit info, details
+
+**Command Card**:
+A grid of buttons showing available actions for the selected entity. Right-click to issue. Appears in selection context.
+_Avoid_: action bar, ability bar, hotbar
+
+**Information Hierarchy**:
+The priority order for what the player sees: (1) The world — always primary, fills 80%+ of screen. (2) Selection context — on demand. (3) Empire status — thin strip, always visible. The world is the interface.
+_Avoid_: UI hierarchy, visual priority
+
+**Feedback**:
+Every action gets a reaction. Visual (glow, particles, floating text), auditory (clicks, acknowledgments, ambient). No silent failures. The player should never wonder "did the game hear me?"
+_Avoid_: response, reaction, confirmation (use "feedback" for the complete system)
+
+**Golden Hour**:
+The color temperature of the entire UI. Warm by default, cool only for exception. Parchment backgrounds, terracotta borders, gold accents. The visual signature of Sun After Rome.
+_Avoid_: warm palette, brown theme (use "golden hour" for the feeling)
