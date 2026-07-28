@@ -12,6 +12,7 @@
 (local interpolation (require :src.render.interpolation))
 (local font (require :src.render.font))
 (local log (require :src.log))
+(local minimap (require :src.render.ui.minimap))
 
 (var game-world nil)
 (var terrain nil)
@@ -47,6 +48,7 @@
   (setup-world)
   (hud.init-cursors)
   (font.load-fonts)
+  (minimap.init)
   (let [(ok source) (pcall love.audio.newSource "assets/music/sar.ogg" "stream")]
     (if ok
         (do
@@ -87,19 +89,22 @@
   (hud.draw-selection-highlight game-world)
   (hud.draw-drag-rect)
   (floating-text.draw-texts game-world)
-  (hud.draw-hud game-world))
+  (hud.draw-hud game-world)
+  (minimap.draw game-world))
 
 (fn love.keypressed [key]
   (match key
     :f5 (do
           (setup-world)
           (hud.init-cursors)
+          (minimap.init)
           (let [(ok repl) (pcall require "lib.stdio")]
             (when ok (repl.init-env! game-world)))
           (print "World reset."))
     :escape (do
               (hud.set-command-mode nil)
               (love.event.quit))
+    :f2 (minimap.toggle)
     :f3 (sprites.toggle-grid)
     :m (hud.set-command-mode :move)
     :g (hud.set-command-mode :gather)
@@ -112,6 +117,13 @@
     :b (orders.issue! game-world (orders.advance-age 1))))
 
 (fn love.mousepressed [x y button shift]
+  ;; check minimap click first
+  (let [(screen-w screen-h) (love.graphics.getDimensions)
+        mm-result (minimap.handle-click x y game-world screen-w screen-h)]
+    (when mm-result
+      ;; minimap clicked — scroll view (TODO: implement camera scroll)
+      (log.debug :init (.. "Minimap click at tile " mm-result.tile-x "," mm-result.tile-y))))
+  ;; then handle HUD clicks
   (hud.handle-click x y game-world button shift)
   (when (and (= button 1) (not (hud.get-command-mode)))
     (hud.set-drag-start x y)))
