@@ -28,7 +28,7 @@ assignees: vorren
 
 - OS: 
 - LÖVE version: 
-- Fennel version: 
+- Lua version: 
 
 ## Stack Trace
 
