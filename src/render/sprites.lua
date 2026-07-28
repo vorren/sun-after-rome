@@ -64,7 +64,7 @@ local function get_or_create_animation(eid, tag, task)
     end
   end
   local anim = nil
-  if sprites then
+  if sprites and sprites[1] then
     anim = animation.make_animation(sprites, 15, true)
   end
   if anim then
@@ -173,6 +173,21 @@ local function draw_rally_point(w, eid)
   end
 end
 
+local function draw_entity_shape(tag, sx, sy)
+  local color = get_color(tag)
+  if building_colors[tag] then
+    love.graphics.setColor(color[1], color[2], color[3])
+    love.graphics.rectangle("fill", sx - 24, sy - 32, 48, 64)
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.rectangle("line", sx - 24, sy - 32, 48, 64)
+  else
+    love.graphics.setColor(color[1], color[2], color[3])
+    love.graphics.circle("fill", sx, sy - 8, 8)
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.circle("line", sx, sy - 8, 8)
+  end
+end
+
 local function draw_entity(w, eid)
   local kind = world.world_get(w, eid, "kind")
   local pos = interpolation.interpolated_pos(w, eid)
@@ -184,6 +199,7 @@ local function draw_entity(w, eid)
     local sy = raw_sy + offset_y
     local task = world.world_get(w, eid, "task")
     local anim = get_or_create_animation(eid, tag, task)
+    local drew_sprite = false
     if anim then
       animation.update(anim, 1 / 60)
       local dir = entity_direction(w, eid)
@@ -195,20 +211,11 @@ local function draw_entity(w, eid)
         else
           love.graphics.draw(sprite.image, sx - 32, sy, 0, 1, 1, 0, 0)
         end
+        drew_sprite = true
       end
-    else
-      local color = get_color(tag)
-      if building_colors[tag] then
-        love.graphics.setColor(color[1], color[2], color[3])
-        love.graphics.rectangle("fill", sx - 24, sy - 32, 48, 64)
-        love.graphics.setColor(0, 0, 0)
-        love.graphics.rectangle("line", sx - 24, sy - 32, 48, 64)
-      else
-        love.graphics.setColor(color[1], color[2], color[3])
-        love.graphics.circle("fill", sx, sy - 8, 8)
-        love.graphics.setColor(0, 0, 0)
-        love.graphics.circle("line", sx, sy - 8, 8)
-      end
+    end
+    if not drew_sprite then
+      draw_entity_shape(tag, sx, sy)
     end
     draw_health_bar(w, eid, sx, sy)
     draw_idle_indicator(w, eid, sx, sy)
