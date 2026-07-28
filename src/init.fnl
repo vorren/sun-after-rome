@@ -62,9 +62,10 @@
   (when (> dt 0.1)
     (set dt 0.1))
   (set accumulator (+ accumulator dt))
+  ;; Save positions ONCE before any ticks run
+  (interpolation.save-positions game-world)
   (while (>= accumulator tick-dt)
     (set accumulator (- accumulator tick-dt))
-    (interpolation.save-positions game-world)
     (sim.tick! game-world))
   (interpolation.set-alpha (/ accumulator tick-dt))
   (floating-text.update-texts dt)
