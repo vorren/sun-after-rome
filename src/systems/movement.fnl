@@ -32,12 +32,22 @@
             (set best-dist d))))))
   best)
 
+(fn blocks-movement? [w eid]
+  "Check if entity blocks movement (has :blocks true in content)."
+  (let [kind (world.world-get w eid :kind)]
+    (when kind
+      (content.kind-stat kind.tag :blocks false))))
+
 (fn would-collide [w eid tx ty]
   (let [other (entity-at-tile w tx ty eid)]
     (when other
-      (let [cr (collision-radius w eid)
-            or2 (collision-radius w other)]
-        (< (+ cr or2) 1.0)))))
+      ;; buildings with :blocks true always block
+      (if (blocks-movement? w other)
+          true
+          ;; units collide based on collision radius
+          (let [cr (collision-radius w eid)
+                or2 (collision-radius w other)]
+            (< (+ cr or2) 1.0))))))
 
 (fn push-entity [w eid tx ty]
   (let [other (entity-at-tile w tx ty eid)]
