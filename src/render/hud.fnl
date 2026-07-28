@@ -15,10 +15,10 @@
 (var cursor-hand nil)
 
 (fn init-cursors []
-  (set cursor-default (love.mouse.newCursor "arrow"))
-  (set cursor-pointer (love.mouse.newCursor "hand"))
-  (set cursor-crosshair (love.mouse.newCursor "crosshair"))
-  (set cursor-hand (love.mouse.newCursor "hand")))
+  (set cursor-default (love.mouse.getSystemCursor "arrow"))
+  (set cursor-pointer (love.mouse.getSystemCursor "hand"))
+  (set cursor-crosshair (love.mouse.getSystemCursor "crosshair"))
+  (set cursor-hand (love.mouse.getSystemCursor "hand")))
 
 (fn set-selection! [eid] (set selected-eids [eid]))
 (fn get-selection [] selected-eids)
