@@ -207,6 +207,133 @@ Make a button that responds to mouse hover and click. Use `love.mouse.getPositio
 
 Make a bar that fills smoothly when the value changes, using linear interpolation over 200ms.
 
+## Data-Driven UI
+
+The game uses a data-driven UI system. Layouts are defined as tables, not code. This section explains how it works.
+
+### The Node Schema
+
+Every UI element is a table with a `:type` field:
+
+```fennel
+{:type :panel
+ :x 10 :y 10
+ :w 300 :h 50
+ :pad 8
+ :dir :horiz
+ :gap 4
+ :children [...]}
+```
+
+**Required field:**
+- `:type` — `:panel`, `:label`, `:icon`, `:bar`, or `:button`
+
+**Positioning (relative):**
+- `:x :left` — left edge
+- `:x :right` — right edge
+- `:x :center` — centered
+- `:x :right-120` — 120px from right edge
+- `:y :top` — top edge
+- `:y :bottom` — bottom edge
+- `:y :bottom-40` — 40px from bottom
+
+**Auto-layout:**
+- `:dir :vert` — stack children top to bottom
+- `:dir :horiz` — stack children left to right
+- `:gap 4` — space between children
+- `:pad 8` — padding inside panel
+
+### Theme System
+
+The golden hour palette is a separate theme table. Easy to swap.
+
+```fennel
+(local ui (require :src.render.ui))
+
+;; Initialize with default theme
+(ui.init {})
+
+;; Or with overrides
+(ui.init {:parchment "#FFFFFF"})
+```
+
+### Drawing UI
+
+```fennel
+(local ui (require :src.render.ui))
+
+(fn love.draw []
+  (ui.draw
+    (ui.root {}
+      ;; Resource bar
+      {:type :panel
+       :x :top :y :left
+       :w 400 :h 50
+       :dir :horiz :gap 12 :pad 8
+       :children
+       [{:type :label
+         :x 0 :y 0
+         :text "Wood: 120"
+         :font :md :color :sage}
+        {:type :bar
+         :x 0 :y 0
+         :w 200 :h 12
+         :value 0.6 :max 1
+         :fill :gold :bg :brown}]}
+      ;; Command card
+      {:type :panel
+       :x :right-170 :y :bottom-110
+       :w 160 :h 100
+       :dir :horiz :gap 4 :pad 6
+       :children
+       [{:type :button
+         :x 0 :y 0
+         :w 44 :h 44
+         :text "Move"
+         :on-click (fn [] (print "clicked!"))}]})))
+```
+
+### Hit Testing
+
+The UI module handles mouse interaction automatically:
+
+```fennel
+;; In love.update or love.mousepressed
+(fn love.mousemoved [x y]
+  (ui.handle-mouse-move root-node x y))
+
+(fn love.mousepressed [x y button]
+  (when (= button 1)
+    (ui.handle-click root-node x y)))
+```
+
+### Color Resolution
+
+Colors can be:
+- HEXSTRING: `"#F5E6C8"` (primary format)
+- RGB table: `[0.96 0.90 0.78]`
+- Theme key: `:parchment` (resolved from theme)
+
+```fennel
+(ui.resolve "#F5E6C8")  ;; → [0.96, 0.90, 0.78]
+(ui.resolve :parchment)   ;; → [0.96, 0.90, 0.78]
+(ui.resolve [0.5 0.5 0.5])  ;; → [0.5, 0.5, 0.5]
+```
+
+### Exercises
+
+#### Exercise 6: Build a resource bar
+
+Create a horizontal panel with four labels (wood, food, gold, stone) using the UI module.
+
+#### Exercise 7: Add a button
+
+Create a "Train Villager" button that prints to console when clicked.
+
+#### Exercise 8: Build a selection panel
+
+When a unit is selected, show its type, health bar, and current task.
+
 ## Questions to ask yourself
 
 When building any UI element:
