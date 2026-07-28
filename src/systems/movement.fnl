@@ -42,16 +42,23 @@
 (fn push-entity [w eid tx ty]
   (let [other (entity-at-tile w tx ty eid)]
     (when other
-      (let [op (world.world-get w other :position)]
-        (when op
-          (var dx (- tx op.x))
-          (var dy (- ty op.y))
+      (let [op (world.world-get w other :position)
+            ep (world.world-get w eid :position)]
+        (when (and op ep)
+          (var dx (- ep.x op.x))
+          (var dy (- ep.y op.y))
           (when (and (= dx 0) (= dy 0))
             (set dx 1))
-          (let [push-x (math.max 0 (math.min (- w.width 1) (+ op.x (if (> dx 0) 1 -1))))
-                push-y (math.max 0 (math.min (- w.height 1) (+ op.y (if (> dy 0) 1 -1))))]
-            (set op.x push-x)
-            (set op.y push-y)))))))
+          (let [dist (math.sqrt (+ (* dx dx) (* dy dy)))
+                nx (/ dx dist)
+                ny (/ dy dist)
+                cr (collision-radius w eid)
+                or2 (collision-radius w other)
+                push-dist (* 0.3 (+ cr or2))
+                push-x (+ op.x (* nx push-dist))
+                push-y (+ op.y (* ny push-dist))]
+            (set op.x (math.max 0 (math.min (- w.width 1) push-x)))
+            (set op.y (math.max 0 (math.min (- w.height 1) push-y)))))))))
 
 (fn step-toward! [w eid tx ty]
   (let [p (world.world-get w eid :position)

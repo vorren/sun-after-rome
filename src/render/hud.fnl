@@ -167,40 +167,46 @@
         (math.min drag-start.x mx) (math.min drag-start.y my)
         (math.abs (- mx drag-start.x)) (math.abs (- my drag-start.y))))))
 
+(fn get-scale []
+  "Get scale factor based on window size (reference: 1280x720)."
+  (let [(w h) (love.graphics.getDimensions)]
+    (math.min (/ w 1280) (/ h 720))))
+
 (fn draw-hud [w]
-  (love.graphics.setColor 1 1 1)
-  (love.graphics.print "=== Sun After Rome ===" 10 10)
-  (love.graphics.print (.. "Tick: " w.tick) 10 30)
-  (for [p 1 w.num-players]
-    (let [pl (- p 1)
-          wood (world.resource-amount w pl :wood)
-          gold (world.resource-amount w pl :gold)
-          stone (world.resource-amount w pl :stone)
-          age (world.player-age w pl)
-          y (+ 50 (* (- p 1) 80))]
-      (love.graphics.setColor 0.8 0.8 0.8)
-      (love.graphics.print (.. "Player " p " (Age " age ")") 10 y)
-      (love.graphics.setColor 0.4 0.8 0.2)
-      (love.graphics.print (.. "Wood: " wood) 10 (+ y 18))
-      (love.graphics.setColor 0.8 0.8 0.3)
-      (love.graphics.print (.. "Gold: " gold) 120 (+ y 18))
-      (love.graphics.setColor 0.6 0.6 0.6)
-      (love.graphics.print (.. "Stone: " stone) 230 (+ y 18))
-      (let [prog (world.age-progress w pl)]
-        (when prog
-          (love.graphics.setColor 0.5 0.8 1)
-          (love.graphics.print (.. "Advancing... " prog " ticks left") 10 (+ y 36))))))
-  (when (> (# selected-eids) 0)
-    (love.graphics.setColor 1 1 0)
-    (love.graphics.print (.. "Selected: " (# selected-eids) " units") 10 (- w.height 80))
-    (let [eid (. selected-eids 1)
-          kind (world.world-get w eid :kind)
-          task (world.world-get w eid :task)]
-      (when kind (love.graphics.print (.. "Type: " (tostring kind.tag)) 200 (- w.height 80)))
-      (when task (love.graphics.print (.. "Task: " (tostring task.kind)) 400 (- w.height 80)))))
-  (when command-mode
-    (love.graphics.setColor 1 0.5 0)
-    (love.graphics.print (.. "Mode: " (string.upper (tostring command-mode)) " - click target") 10 (- w.height 60))))
+  (let [s (get-scale)]
+    (love.graphics.setColor 1 1 1)
+    (love.graphics.print "=== Sun After Rome ===" (* 10 s) (* 10 s))
+    (love.graphics.print (.. "Tick: " w.tick) (* 10 s) (* 30 s))
+    (for [p 1 w.num-players]
+      (let [pl (- p 1)
+            wood (world.resource-amount w pl :wood)
+            gold (world.resource-amount w pl :gold)
+            stone (world.resource-amount w pl :stone)
+            age (world.player-age w pl)
+            y (* (+ 50 (* (- p 1) 80)) s)]
+        (love.graphics.setColor 0.8 0.8 0.8)
+        (love.graphics.print (.. "Player " p " (Age " age ")") (* 10 s) y)
+        (love.graphics.setColor 0.4 0.8 0.2)
+        (love.graphics.print (.. "Wood: " wood) (* 10 s) (+ y (* 18 s)))
+        (love.graphics.setColor 0.8 0.8 0.3)
+        (love.graphics.print (.. "Gold: " gold) (* 120 s) (+ y (* 18 s)))
+        (love.graphics.setColor 0.6 0.6 0.6)
+        (love.graphics.print (.. "Stone: " stone) (* 230 s) (+ y (* 18 s)))
+        (let [prog (world.age-progress w pl)]
+          (when prog
+            (love.graphics.setColor 0.5 0.8 1)
+            (love.graphics.print (.. "Advancing... " prog " ticks left") (* 10 s) (+ y (* 36 s)))))))
+    (when (> (# selected-eids) 0)
+      (love.graphics.setColor 1 1 0)
+      (love.graphics.print (.. "Selected: " (# selected-eids) " units") (* 10 s) (* (- w.height 80) s))
+      (let [eid (. selected-eids 1)
+            kind (world.world-get w eid :kind)
+            task (world.world-get w eid :task)]
+        (when kind (love.graphics.print (.. "Type: " (tostring kind.tag)) (* 200 s) (* (- w.height 80) s)))
+        (when task (love.graphics.print (.. "Task: " (tostring task.kind)) (* 400 s) (* (- w.height 80) s)))))
+    (when command-mode
+      (love.graphics.setColor 1 0.5 0)
+      (love.graphics.print (.. "Mode: " (string.upper (tostring command-mode)) " - click target") (* 10 s) (* (- w.height 60) s)))))
 
 (fn handle-click [x y w button shift]
   (if (= button 1)

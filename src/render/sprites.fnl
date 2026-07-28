@@ -1,12 +1,14 @@
-;; aurelius.render.sprites --- placeholder sprite rendering (colored shapes).
-;; No asset files needed yet; units are circles, buildings are rectangles.
-;; Supports float positions for smooth movement.
+;; aurelius.render.sprites --- placeholder sprite rendering with interpolation.
+;; Supports smooth movement via frame interpolation.
 
 (local world (require :src.world))
 (local iso (require :src.render.iso))
+(local interpolation (require :src.render.interpolation))
 
 (local tile-w 64)
 (local tile-h 32)
+(local offset-x iso.screen-offset-x)
+(local offset-y iso.screen-offset-y)
 
 (local unit-colors
   {:villager [0.2 0.8 0.2]
@@ -23,6 +25,11 @@
    :gold-mine  [0.9 0.8 0.1]
    :stone-mine [0.6 0.6 0.6]})
 
+(var grid-visible true)
+
+(fn toggle-grid []
+  (set grid-visible (not grid-visible)))
+
 (fn get-color [tag]
   (or (. unit-colors tag)
       (. building-colors tag)
@@ -31,15 +38,15 @@
 
 (fn draw-entity [w eid]
   (let [kind (world.world-get w eid :kind)
-        pos (world.world-get w eid :position)]
+        pos (interpolation.interpolated-pos w eid)]
     (when (and kind pos)
       (let [tag kind.tag
             (raw-sx raw-sy) (iso.to-screen pos.x pos.y tile-w tile-h)
             color (. (get-color tag) 1)
             color2 (. (get-color tag) 2)
             color3 (. (get-color tag) 3)
-            sx (+ raw-sx 640)
-            sy (+ raw-sy 100)]
+            sx (+ raw-sx offset-x)
+            sy (+ raw-sy offset-y)]
         (if (. building-colors tag)
             (do
               (love.graphics.setColor color color2 color3)
@@ -53,18 +60,19 @@
               (love.graphics.circle :line sx (- sy 8) 8)))))))
 
 (fn draw-isometric-grid [w]
-  (love.graphics.setColor 0.3 0.3 0.3 0.3)
-  (for [x 0 (- w.width 1)]
-    (for [y 0 (- w.height 1)]
-      (let [(raw-sx raw-sy) (iso.to-screen x y tile-w tile-h)]
-        (var sx (+ raw-sx 640))
-        (var sy (+ raw-sy 100))
-        (love.graphics.line
-         sx (- sy (/ tile-h 2))
-         (+ sx (/ tile-w 2)) sy
-         sx (+ sy (/ tile-h 2))
-         (- sx (/ tile-w 2)) sy
-         sx (- sy (/ tile-h 2)))))))
+  (when grid-visible
+    (love.graphics.setColor 0.3 0.3 0.3 0.3)
+    (for [x 0 (- w.width 1)]
+      (for [y 0 (- w.height 1)]
+        (let [(raw-sx raw-sy) (iso.to-screen x y tile-w tile-h)]
+          (var sx (+ raw-sx offset-x))
+          (var sy (+ raw-sy offset-y))
+          (love.graphics.line
+           sx (- sy (/ tile-h 2))
+           (+ sx (/ tile-w 2)) sy
+           sx (+ sy (/ tile-h 2))
+           (- sx (/ tile-w 2)) sy
+           sx (- sy (/ tile-h 2))))))))
 
 (fn draw-world [w]
   (draw-isometric-grid w)
@@ -75,8 +83,11 @@
         (when pos
           (table.insert entities {:eid eid
                                   :depth (iso.depth-key pos.x pos.y)}))))
-    (table.sort entities (fn [a b] (< a.depth b.depth)))
+    (table.sort entities (fn [a b]
+                           (if (= a.depth b.depth)
+                               (< a.eid b.eid)
+                               (< a.depth b.depth))))
     (each [_ e (ipairs entities)]
       (draw-entity w e.eid))))
 
-{: draw-world : draw-entity : tile-w : tile-h}
+{: draw-world : draw-entity : tile-w : tile-h : toggle-grid}

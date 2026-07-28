@@ -9,6 +9,8 @@
 (local map (require :src.render.map))
 (local floating-text (require :src.render.floating-text))
 (local ai (require :src.ai.scripted))
+(local interpolation (require :src.render.interpolation))
+(local font (require :src.render.font))
 
 (var game-world nil)
 (var terrain nil)
@@ -33,11 +35,13 @@
   (spawn-initial-entities game-world)
   (world.set-controller! game-world 1 (ai.make-ai-controller 1))
   (set terrain (map.init-map game-world 42))
-  (floating-text.clear-texts))
+  (floating-text.clear-texts)
+  (interpolation.clear))
 
 (fn love.load []
   (setup-world)
   (hud.init-cursors)
+  (font.load-fonts)
   (let [(ok source) (pcall love.audio.newSource "assets/music/sar.ogg" "stream")]
     (when ok
       (set music source)
@@ -60,7 +64,9 @@
   (set accumulator (+ accumulator dt))
   (while (>= accumulator tick-dt)
     (set accumulator (- accumulator tick-dt))
+    (interpolation.save-positions game-world)
     (sim.tick! game-world))
+  (interpolation.set-alpha (/ accumulator tick-dt))
   (floating-text.update-texts dt)
   (let [(ok repl) (pcall require "lib.stdio")]
     (when ok (repl.poll))))
@@ -85,6 +91,7 @@
     :escape (do
               (hud.set-command-mode nil)
               (love.event.quit))
+    :f3 (sprites.toggle-grid)
     :m (hud.set-command-mode :move)
     :g (hud.set-command-mode :gather)
     :a (hud.set-command-mode :attack)
