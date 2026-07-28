@@ -5,6 +5,7 @@
 (local iso (require :src.render.iso))
 (local orders (require :src.orders))
 (local floating-text (require :src.render.floating-text))
+(local sounds (require :src.audio.sounds))
 
 (var selected-eids [])
 (var command-mode nil)
@@ -15,10 +16,10 @@
 (var cursor-hand nil)
 
 (fn init-cursors []
-  (set cursor-default (love.mouse.newCursor "arrow"))
-  (set cursor-pointer (love.mouse.newCursor "hand"))
-  (set cursor-crosshair (love.mouse.newCursor "crosshair"))
-  (set cursor-hand (love.mouse.newCursor "hand")))
+  (set cursor-default (love.mouse.getSystemCursor "arrow"))
+  (set cursor-pointer (love.mouse.getSystemCursor "hand"))
+  (set cursor-crosshair (love.mouse.getSystemCursor "crosshair"))
+  (set cursor-hand (love.mouse.getSystemCursor "hand")))
 
 (fn set-selection! [eid] (set selected-eids [eid]))
 (fn get-selection [] selected-eids)
@@ -83,16 +84,19 @@
 (fn issue-gather [w eid target]
   (when (world.world-get w target :position)
     (orders.issue! w (orders.gather eid target))
-    (floating-text.add-text w eid "Gather")))
+    (floating-text.add-text w eid "Gather")
+    (sounds.play :gather)))
 
 (fn issue-attack [w eid target]
   (when (world.world-get w target :position)
     (orders.issue! w (orders.attack eid target))
-    (floating-text.add-text w eid "Attack")))
+    (floating-text.add-text w eid "Attack")
+    (sounds.play :attack)))
 
 (fn issue-move [w eid tx ty]
   (orders.issue! w (orders.move eid tx ty))
-  (floating-text.add-text w eid "Move"))
+  (floating-text.add-text w eid "Move")
+  (sounds.play :move))
 
 (fn issue-command-to-selected [w x y]
   (let [(tile-x tile-y) (tile-at-screen x y)

@@ -12,6 +12,7 @@
 
 (var game-world nil)
 (var terrain nil)
+(var music nil)
 
 (fn spawn-initial-entities [w]
   (world.spawn! w :town-centre {:owner 0 :x 3 :y 3})
@@ -37,6 +38,12 @@
 (fn love.load []
   (setup-world)
   (hud.init-cursors)
+  (let [(ok source) (pcall love.audio.newSource "assets/music/sar.ogg" "stream")]
+    (when ok
+      (set music source)
+      (music:setLooping true)
+      (music:setVolume 0.3)
+      (love.audio.play music)))
   (let [(ok repl) (pcall require "lib.stdio")]
     (when ok
       (repl.init-env! game-world)
