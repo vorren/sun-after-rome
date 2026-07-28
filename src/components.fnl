@@ -8,7 +8,8 @@
 (fn make-carry [resource amount] {:resource resource :amount amount})
 (fn make-node [resource amount] {:resource resource :amount amount})
 (fn make-cooldown [ticks] {:ticks ticks})
-(fn make-producer [queue progress] {:queue queue :progress progress})
+(fn make-producer [queue progress rally-x rally-y]
+  {:queue queue :progress progress :rally-x rally-x :rally-y rally-y})
 (fn make-task [kind target tx ty phase]
   {:kind kind :target target :tx tx :ty ty :phase phase})
 

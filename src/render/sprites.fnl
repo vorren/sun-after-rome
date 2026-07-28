@@ -78,6 +78,24 @@
         (love.graphics.setColor 1 0.8 0 alpha)
         (love.graphics.circle :fill sx (- sy 20) 4)))))
 
+(fn draw-rally-point [w eid]
+  "Draw rally point flag for buildings."
+  (let [producer (world.world-get w eid :producer)
+        pos (world.world-get w eid :position)]
+    (when (and producer producer.rally-x producer.rally-y pos)
+      (let [(offset-x offset-y) (camera.get-offset)
+            (raw-sx raw-sy) (iso.to-screen producer.rally-x producer.rally-y tile-w tile-h)
+            sx (+ raw-sx offset-x)
+            sy (+ raw-sy offset-y)]
+        ;; flag pole
+        (love.graphics.setColor 0.8 0.8 0.8)
+        (love.graphics.setLineWidth 2)
+        (love.graphics.line sx sy (- sy 20))
+        ;; flag
+        (love.graphics.setColor 0.9 0.2 0.2)
+        (love.graphics.rectangle :fill sx (- sy 20) 10 8)
+        (love.graphics.setLineWidth 1)))))
+
 (fn draw-entity [w eid]
   (let [kind (world.world-get w eid :kind)
         pos (interpolation.interpolated-pos w eid)]
@@ -104,7 +122,10 @@
         ;; draw health bar above entity
         (draw-health-bar w eid sx sy)
         ;; draw idle indicator
-        (draw-idle-indicator w eid sx sy)))))
+        (draw-idle-indicator w eid sx sy)
+        ;; draw rally point for buildings
+        (when (. building-colors tag)
+          (draw-rally-point w eid))))))
 
 (fn draw-isometric-grid [w]
   (when grid-visible
