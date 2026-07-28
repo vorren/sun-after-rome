@@ -101,7 +101,7 @@ local function apply_one(w, order)
   elseif order.tag == "concede" then
     local win_condition = require("src.systems.win-condition")
     -- conceding player loses — the other player wins
-    win_condition["set-winner"](w, (order.player == 0) and 1 or 0)
+    win_condition.set_winner(w, (order.player == 0) and 1 or 0)
     return true
   end
   return false
@@ -129,6 +129,7 @@ return {
   ["advance-age"] = advance_age,
   advance_age = advance_age,
   ["issue!"] = issue_bang,
+  issue = issue_bang,
   issue_bang = issue_bang,
   ["apply-orders!"] = apply_orders,
   ["apply_orders!"] = apply_orders,

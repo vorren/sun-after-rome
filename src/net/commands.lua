@@ -10,7 +10,7 @@ local function serialize_order(order)
     return string.format("a:%d:%d", order.eid, order.target)
   elseif order.tag == "train" then
     return string.format("t:%d:%s", order.prod, order.unit)
-  elseif order.tag == "advance-age" then
+  elseif order.tag == "advance_age" then
     return string.format("u:%d", order.player)
   else
     return ""

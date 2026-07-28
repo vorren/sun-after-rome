@@ -16,13 +16,15 @@ local function entity_pos(w, eid)
 end
 
 local function speed_of(w, eid)
-  local tag = w.store.kind[eid].tag
-  return content.kind_stat(tag, "speed", 1)
+  local kind = world.world_get(w, eid, "kind")
+  if not kind then return 1 end
+  return content.kind_stat(kind.tag, "speed", 1)
 end
 
 local function collision_radius(w, eid)
-  local tag = w.store.kind[eid].tag
-  return content.kind_stat(tag, "collision-radius", 0) or 0
+  local kind = world.world_get(w, eid, "kind")
+  if not kind then return 0 end
+  return content.kind_stat(kind.tag, "collision-radius", 0) or 0
 end
 
 local function entity_at_tile(w, x, y, exclude_eid)

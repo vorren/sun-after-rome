@@ -356,7 +356,7 @@ local function draw_hud(w)
     end
     selection_context = {
       type = "panel",
-      x = "left", y = "bottom-110",
+      x = "left", y = ":bottom-110",
       w = 300, h = 100,
       pad = 10 * s,
       children = children
@@ -368,7 +368,7 @@ local function draw_hud(w)
   if command_mode then
     command_mode_hint = {
       type = "panel",
-      x = "left", y = "bottom-60",
+      x = "left", y = ":bottom-60",
       w = 300, h = 30 * s,
       pad = 8 * s,
       alpha = 0.9,
@@ -388,7 +388,7 @@ local function draw_hud(w)
     ui.root({},
       -- Empire status strip
       {type = "panel",
-       x = "top", y = "left",
+       x = "left", y = "top",
        w = 400, h = 50 * s,
        dir = "horiz", gap = 12 * s, pad = 8 * s,
        alpha = 0.85,
