@@ -3,7 +3,7 @@
 [![Tests](https://github.com/vorren/sun-after-rome/actions/workflows/test.yml/badge.svg)](https://github.com/vorren/sun-after-rome/actions/workflows/test.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-An Age of Empires II-style deterministic RTS built with **Fennel** and **LÖVE**.
+An Age of Empires II-style deterministic RTS built with **Lua** and **LÖVE**.
 
 > **Private repository.** This project is not publicly available. For access, contact the maintainer.
 
@@ -14,7 +14,6 @@ An Age of Empires II-style deterministic RTS built with **Fennel** and **LÖVE**
 - [Requirements](#requirements)
 - [Building](#building)
 - [Controls](#controls)
-- [REPL](#repl)
 - [Architecture](#architecture)
 - [Multiplayer](#multiplayer)
 - [Project Structure](#project-structure)
@@ -29,7 +28,6 @@ Sun After Rome implements the core AoE2 gameplay loop: **gather resources, train
 - **Deterministic simulation** — same seed + same commands = identical world
 - **Two-player LAN multiplayer** — lockstep simulation via ENet
 - **Isometric 2D rendering** — placeholder graphics with Tiled map support
-- **Live REPL** — modify game state at runtime via a Fennel REPL
 - **Procedural map generation** — Perlin noise terrain, or design maps in Tiled
 - **Scripted AI** — deterministic build-order AI with configurable personality
 
@@ -45,26 +43,25 @@ nix develop    # enters dev shell with all deps
 love .         # run game
 
 # Option 2: Manual
-make build
 make run
 ```
 
 ## Requirements
 
 - [LÖVE](https://love2d.org/) 11.4+ (installed externally)
-- [Nix](https://nixos.org/) (recommended) or manual install of Fennel, Lua, ENet
+- [Nix](https://nixos.org/) (recommended) or manual install of Lua, ENet
 
 ### Nix (recommended)
 
 ```bash
-nix develop    # provides: fennel, luajit, enet, gcc, pkg-config, lua5_4
+nix develop    # provides: luajit, enet, gcc, pkg-config
 love .         # run game (love must be installed externally)
 ```
 
 ### macOS (manual)
 
 ```bash
-brew install love fennel lua luajit
+brew install love lua luajit
 make run
 ```
 
@@ -79,9 +76,7 @@ If the ENet binding cannot be found at runtime, networking is disabled — the g
 ## Building
 
 ```bash
-make build    # AOT compile Fennel to Lua
-make test     # Run the test suite (60 tests)
-make clean    # Remove compiled output
+make test     # Run the test suite (69 tests)
 make enet     # Compile the ENet binding (requires headers)
 ```
 
@@ -96,97 +91,12 @@ make enet     # Compile the ENet binding (requires headers)
 | `A` | Advance Age (Player 0) |
 | `B` | Advance Age (Player 1) |
 | `Left Click` | Select entity |
+| `Right Click` | Issue command (Move/Gather/Attack) |
+| `Shift+Right Click` | Queue order |
+| `F2` | Toggle minimap |
+| `F3` | Toggle grid |
 | `F5` | Reset world |
 | `Escape` | Quit |
-
-## REPL
-
-The game includes a file-based Fennel REPL for inspecting and modifying game state at runtime.
-
-**Full reference guide:** [docs/repl-reference.md](docs/repl-reference.md)
-
-### Terminal
-
-```bash
-# Start the game
-love .
-
-# In another terminal
-./repl.sh
-
-# Or manually
-echo '(world.resource-amount game-world 0 :wood)' > repl.in
-cat repl.out
-```
-
-### Emacs
-
-```elisp
-;; M-x shell — run repl.sh in a shell buffer
-(defun sar-repl ()
-  "Open a Sun After Rome REPL buffer."
-  (interactive)
-  (let ((buf (make-comint "sar-repl" "./repl.sh")))
-    (pop-to-buffer buf)))
-
-;; Send a region to the REPL
-(defun sar-send-region (start end)
-  "Send the active region to the SAR REPL."
-  (interactive "r")
-  (let ((code (buffer-substring-no-properties start end)))
-    (with-current-buffer "*sar-repl*"
-      (comint-send-string (get-buffer-process (current-buffer))
-                          (concat code "\n")))))
-
-(global-set-key (kbd "C-c C-r") 'sar-send-region)
-```
-
-### Vim / Neovim
-
-```vim
-" Terminal mode — run repl.sh in a terminal split
-command! SARRepl terminal ./repl.sh
-
-" Send current line to the REPL
-function! SARSendLine()
-  let l:line = getline('.')
-  call chansend(b:terminal_job_id, l:line . "\n")
-endfunction
-
-" Send visual selection to the REPL
-function! SARSendSelection() range
-  let l:lines = getline(a:firstline, a:lastline)
-  call chansend(b:terminal_job_id, l:lines)
-endfunction
-
-nnoremap <leader>r :call SARSendLine()<CR>
-vnoremap <leader>r :call SARSendSelection()<CR>
-```
-
-### Example REPL Sessions
-
-```fennel
-;; Inspect all entities
-(pp (world.world-query game-world :kind))
-
-;; Check player 0's wood
-(world.resource-amount game-world 0 :wood)
-
-;; Give player 0 infinite gold
-(world.add-resource! game-world 0 :gold 9999)
-
-;; Spawn a knight for player 0 at (10, 10)
-(world.spawn! game-world :knight {:owner 0 :x 10 :y 10})
-
-;; Kill all enemies
-(each [_ pair (ipairs (world.world-query game-world :health))]
-  (let [owner (world.world-get game-world pair.eid :owner)]
-    (when (and owner (= owner.player 1))
-      (world.world-remove-entity! game-world pair.eid))))
-
-;; Force-advance player 0 to age 3
-(world.set-player-age! game-world 0 3)
-```
 
 ## Architecture
 
@@ -199,8 +109,8 @@ The game uses an **Entity-Component-System (ECS)** architecture:
 
 ### System Pipeline (each tick)
 
-1. `apply-orders!` — drain command queue, translate to entity tasks
-2. `controller-dispatch!` — AI controllers issue orders
+1. `apply_orders` — drain command queue, translate to entity tasks
+2. `controller_dispatch` — AI controllers issue orders
 3. `production` — buildings advance training queues, spawn units
 4. `age` — faction age countdowns tick down
 5. `movement` — units step toward destinations
@@ -243,44 +153,53 @@ tailscale ip -4
 ## Project Structure
 
 ```
-aurelius-fennel/
+sun-after-rome/
 ├── lib/                    # Third-party libraries
-│   ├── fennel.lua          # Embedded Fennel compiler
-│   ├── fennelview.lua      # Pretty-printer
 │   ├── luaunit.lua         # Test framework
 │   └── enet.so             # ENet binding (compiled, not in repo)
 ├── src/
-│   ├── init.fnl            # LÖVE callbacks
-│   ├── world.fnl           # Entity/component store
-│   ├── components.fnl      # Component constructors
-│   ├── content.fnl         # Unit/building stats
-│   ├── orders.fnl          # Commands-as-data
-│   ├── rng.fnl             # Deterministic PRNG
-│   ├── sim.fnl             # Fixed-timestep tick loop
+│   ├── init.lua            # LÖVE callbacks
+│   ├── world.lua           # Entity/component store
+│   ├── components.lua      # Component constructors
+│   ├── content.lua         # Unit/building stats
+│   ├── orders.lua          # Commands-as-data
+│   ├── rng.lua             # Deterministic PRNG
+│   ├── log.lua             # Logging system
+│   ├── sim.lua             # Fixed-timestep tick loop
 │   ├── ai/                 # AI controllers
-│   │   ├── scripted.fnl    # Scripted build-order AI
-│   │   └── personalities.fnl # Data-driven personality configs
+│   │   ├── scripted.lua    # Scripted build-order AI
+│   │   └── personalities.lua # Data-driven personality configs
 │   ├── systems/            # Game systems
-│   │   ├── age.fnl
-│   │   ├── combat.fnl
-│   │   ├── gather.fnl
-│   │   ├── movement.fnl
-│   │   └── production.fnl
+│   │   ├── age.lua
+│   │   ├── combat.lua
+│   │   ├── gather.lua
+│   │   ├── movement.lua
+│   │   ├── production.lua
+│   │   └── win-condition.lua
 │   ├── net/                # Networking
-│   │   ├── lockstep.fnl    # Lockstep coordinator
-│   │   ├── commands.fnl    # Command serialization
-│   │   └── host.fnl        # ENet connection management
+│   │   ├── lockstep.lua    # Lockstep coordinator
+│   │   ├── commands.lua    # Command serialization
+│   │   └── host.lua        # ENet connection management
 │   └── render/             # Rendering
-│       ├── iso.fnl         # Isometric transforms
-│       ├── sprites.fnl     # Placeholder sprite rendering
-│       ├── map.fnl         # Terrain + Tiled integration
-│       └── hud.fnl         # HUD overlay
-├── test/                   # Test suite (60 tests)
+│       ├── iso.lua         # Isometric transforms
+│       ├── sprites.lua     # Placeholder sprite rendering
+│       ├── map.lua         # Terrain + Tiled integration
+│       ├── hud.lua         # HUD overlay
+│       ├── camera.lua      # Viewport management
+│       ├── animation.lua   # Sprite animation
+│       ├── interpolation.lua # Frame interpolation
+│       └── ui/             # UI system
+│           ├── init.lua    # UI engine
+│           ├── theme.lua   # Golden hour color palette
+│           ├── command-card.lua # Action buttons
+│           ├── minimap.lua # Minimap
+│           └── production-queue.lua # Production display
+├── test/                   # Test suite (69 tests)
 ├── docs/
 │   ├── adr/                # Architecture Decision Records
 │   └── agents/             # Agent configuration
 ├── conf.lua                # LÖVE configuration
-├── main.lua                # Fennel bootstrap
+├── main.lua                # Bootstrap
 └── Makefile                # Build system
 ```
 
@@ -296,11 +215,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, workflow, and code conventions
 - [Game Programming Patterns (Nystrom)](https://gameprogrammingpatterns.com/) — free online book, ECS and game loops chapters
 - [Rules of Play (Salen & Zimmerman)](https://mitpress.mit.edu/9780262240453/rules-of-play/) — game design theory
 
-### Fennel and Lua
+### Lua
 
-- [Fennel Programming Language](https://fennel-lang.org/) — official docs and tutorial
 - [Programming in Lua (4th ed.)](https://www.lua.org/pil/) — definitive Lua reference
 - [Lua Reference Manual](https://www.lua.org/manual/5.4/) — official Lua docs
+- [Lua Users Wiki](https://lua-users.org/wiki/) — community tutorials
 
 ### LÖVE Framework
 
