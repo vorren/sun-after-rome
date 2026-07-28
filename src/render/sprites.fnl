@@ -83,7 +83,10 @@
         (when pos
           (table.insert entities {:eid eid
                                   :depth (iso.depth-key pos.x pos.y)}))))
-    (table.sort entities (fn [a b] (< a.depth b.depth)))
+    (table.sort entities (fn [a b]
+                           (if (= a.depth b.depth)
+                               (< a.eid b.eid)
+                               (< a.depth b.depth))))
     (each [_ e (ipairs entities)]
       (draw-entity w e.eid))))
 
