@@ -83,12 +83,17 @@
           (let [(ok repl) (pcall require "lib.stdio")]
             (when ok (repl.init-env! game-world)))
           (print "World reset."))
-    :escape (love.event.quit)
+    :escape (do
+              (hud.set-command-mode nil)
+              (love.event.quit))
+    :m (hud.set-command-mode :move)
+    :g (hud.set-command-mode :gather)
+    :a (hud.set-command-mode :attack)
     :1 (orders.issue! game-world (orders.train 2 :villager))
     :2 (orders.issue! game-world (orders.train 3 :knight))
     :3 (orders.issue! game-world (orders.train 3 :pikeman))
     :4 (orders.issue! game-world (orders.train 3 :archer))
-    :a (orders.issue! game-world (orders.advance-age 0))
+    :space (orders.issue! game-world (orders.advance-age 0))
     :b (orders.issue! game-world (orders.advance-age 1))))
 
 (fn love.mousepressed [x y button]

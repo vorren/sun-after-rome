@@ -7,11 +7,17 @@
 (local floating-text (require :src.render.floating-text))
 
 (var selected-eid nil)
+(var command-mode nil)
 
 (fn set-selection! [eid]
   (set selected-eid eid))
 
 (fn get-selection [] selected-eid)
+
+(fn set-command-mode [mode]
+  (set command-mode mode))
+
+(fn get-command-mode [] command-mode)
 
 (fn entity-at-tile [w tile-x tile-y]
   (var best nil)
@@ -63,6 +69,18 @@
 (fn issue-move [w eid tx ty]
   (orders.issue! w (orders.move eid tx ty))
   (floating-text.add-text w eid "Move"))
+
+(fn handle-command-click [x y w]
+  (when selected-eid
+    (let [(tile-x tile-y) (tile-at-screen x y)
+          target (entity-at-tile w tile-x tile-y)
+          target-type (classify-target w target)]
+      (when command-mode
+        (if
+          (= command-mode :move) (issue-move w selected-eid tile-x tile-y)
+          (= command-mode :gather) (when target (issue-gather w selected-eid target))
+          (= command-mode :attack) (when target (issue-attack w selected-eid target))))
+      (set command-mode nil))))
 
 (fn handle-right-click [x y w]
   (when selected-eid
@@ -129,15 +147,20 @@
         (when pos
           (love.graphics.print (.. "Pos: " pos.x "," pos.y) 300 (- w.height 80)))
         (when task
-          (love.graphics.print (.. "Task: " (tostring task.kind)) 450 (- w.height 80)))))))
+          (love.graphics.print (.. "Task: " (tostring task.kind)) 450 (- w.height 80))))))
+  (when command-mode
+    (love.graphics.setColor 1 0.5 0)
+    (love.graphics.print (.. "Mode: " (string.upper (tostring command-mode)) " - click target") 10 (- w.height 60))))
 
 (fn handle-click [x y w button]
   (if
     (= button 1)
-    (let [(tile-x tile-y) (tile-at-screen x y)
-          eid (entity-at-tile w tile-x tile-y)]
-      (set-selection! eid))
+    (if command-mode
+        (handle-command-click x y w)
+        (let [(tile-x tile-y) (tile-at-screen x y)
+              eid (entity-at-tile w tile-x tile-y)]
+          (set-selection! eid)))
     (= button 2)
     (handle-right-click x y w)))
 
-{: draw-hud : handle-click : set-selection! : get-selection : draw-selection-highlight}
+{: draw-hud : handle-click : set-selection! : get-selection : draw-selection-highlight : set-command-mode : get-command-mode}
