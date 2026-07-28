@@ -7,6 +7,8 @@
 
 (local tile-w 64)
 (local tile-h 32)
+(local offset-x iso.screen-offset-x)
+(local offset-y iso.screen-offset-y)
 
 (local unit-colors
   {:villager [0.2 0.8 0.2]
@@ -43,8 +45,8 @@
             color (. (get-color tag) 1)
             color2 (. (get-color tag) 2)
             color3 (. (get-color tag) 3)
-            sx (+ raw-sx 640)
-            sy (+ raw-sy 100)]
+            sx (+ raw-sx offset-x)
+            sy (+ raw-sy offset-y)]
         (if (. building-colors tag)
             (do
               (love.graphics.setColor color color2 color3)
@@ -63,8 +65,8 @@
     (for [x 0 (- w.width 1)]
       (for [y 0 (- w.height 1)]
         (let [(raw-sx raw-sy) (iso.to-screen x y tile-w tile-h)]
-          (var sx (+ raw-sx 640))
-          (var sy (+ raw-sy 100))
+          (var sx (+ raw-sx offset-x))
+          (var sy (+ raw-sy offset-y))
           (love.graphics.line
            sx (- sy (/ tile-h 2))
            (+ sx (/ tile-w 2)) sy

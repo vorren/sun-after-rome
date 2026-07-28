@@ -1,5 +1,8 @@
 ;; aurelius.render.iso --- isometric coordinate transforms.
 
+(local screen-offset-x 640)
+(local screen-offset-y 100)
+
 (fn to-screen [tile-x tile-y tile-w tile-h]
   (values (* (- tile-x tile-y) (/ tile-w 2))
           (* (+ tile-x tile-y) (/ tile-h 2))))
@@ -13,4 +16,4 @@
 (fn depth-key [tile-x tile-y]
   (+ tile-y (* tile-x 1000)))
 
-{: to-screen : to-tile : depth-key}
+{: to-screen : to-tile : depth-key : screen-offset-x : screen-offset-y}
