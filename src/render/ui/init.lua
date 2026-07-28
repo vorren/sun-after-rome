@@ -162,13 +162,20 @@ end
 
 local function layout_children(node)
   -- Position children in panel based on :dir and :gap.
-  local dir = node.dir or "vert"
+  -- Only override positions if parent has an explicit dir.
+  local dir = node.dir
+  if not dir then
+    for _, child in ipairs(node.children or {}) do
+      layout_children(child)
+    end
+    return
+  end
   local gap = node.gap or current_theme.gap
   local pad = node.pad or current_theme.pad
   local pad_top = node["pad-top"] or pad
   local pad_left = node["pad-left"] or pad
-  local x0 = node.x + pad_left
-  local y0 = node.y + pad_top
+  local x0 = (node.x or 0) + pad_left
+  local y0 = (node.y or 0) + pad_top
   local cx = x0
   local cy = y0
   for _, child in ipairs(node.children or {}) do
@@ -217,6 +224,7 @@ end
 
 local function draw_panel(node)
   -- Draw panel: filled rectangle + border.
+  if not node.x or not node.y then return end
   local bg = resolve(node.color or current_theme["panel-bg"])
   local border = resolve(node.border or current_theme["panel-border"])
   local border_w = node["border-w"] or current_theme["panel-border-w"]
