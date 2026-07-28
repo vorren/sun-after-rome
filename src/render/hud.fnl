@@ -6,6 +6,7 @@
 (local orders (require :src.orders))
 (local floating-text (require :src.render.floating-text))
 (local sounds (require :src.audio.sounds))
+(local log (require :src.log))
 
 (var selected-eids [])
 (var command-mode nil)
@@ -85,18 +86,21 @@
   (when (world.world-get w target :position)
     (orders.issue! w (orders.gather eid target))
     (floating-text.add-text w eid "Gather")
-    (sounds.play :gather)))
+    (sounds.play :gather)
+    (log.debug :command (.. "Entity " eid " gathering from " target))))
 
 (fn issue-attack [w eid target]
   (when (world.world-get w target :position)
     (orders.issue! w (orders.attack eid target))
     (floating-text.add-text w eid "Attack")
-    (sounds.play :attack)))
+    (sounds.play :attack)
+    (log.debug :command (.. "Entity " eid " attacking " target))))
 
 (fn issue-move [w eid tx ty]
   (orders.issue! w (orders.move eid tx ty))
   (floating-text.add-text w eid "Move")
-  (sounds.play :move))
+  (sounds.play :move)
+  (log.debug :command (.. "Entity " eid " moving to " tx "," ty)))
 
 (fn issue-command-to-selected [w x y]
   (let [(tile-x tile-y) (tile-at-screen x y)

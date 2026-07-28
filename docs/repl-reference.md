@@ -341,3 +341,84 @@ game-world.tick
     (when (and owner (= owner.player 1))
       (world.world-remove-entity! game-world pair.eid))))
 ```
+
+## Logging System
+
+The game includes a logging system with different verbosity levels.
+
+### Log Levels
+
+| Level | Use Case |
+|-------|----------|
+| `:debug` | Detailed debugging info (entity movements, AI decisions) |
+| `:info` | General info (game load, world setup, REPL status) |
+| `:warn` | Warnings (missing files, degraded performance) |
+| `:error` | Errors (failures that need attention) |
+
+### Using the Logger
+
+```fennel
+(local log (require :src.log))
+
+;; Log messages at different levels
+(log.debug :movement "Entity 1 moving to 5,3")
+(log.info :init "Game loaded")
+(log.warn :audio "Music file not found")
+(log.error :combat "Invalid target")
+
+;; Set log level (only messages at this level or higher are shown)
+(log.set-level :debug)  ;; show everything
+(log.set-level :info)   ;; info, warn, error (default)
+(log.set-level :error)  ;; only errors
+
+;; Get current level
+(log.get-level)
+```
+
+### Log Buffer
+
+```fennel
+;; Get all recent log entries
+(log.get-buffer)
+
+;; Get last 20 entries
+(log.get-recent 20)
+
+;; Clear the log buffer
+(log.clear-buffer)
+
+;; Save log to file
+(log.save-to-file "game.log")
+```
+
+### Log Entry Structure
+
+Each log entry contains:
+- `:level` — the log level (:debug, :info, :warn, :error)
+- `:tag` — module or system name (e.g., :init, :command, :ai)
+- `:msg` — the message text
+- `:formatted` — formatted string with level and tag
+
+### Custom Callback
+
+```fennel
+;; Set a callback to receive all log entries
+(log.set-callback (fn [level tag msg]
+                    (print (.. "CUSTOM: " level " " tag " " msg))))
+```
+
+### Tag Convention
+
+Use descriptive tags for different systems:
+
+| Tag | System |
+|-----|--------|
+| `:init` | Game initialization |
+| `:command` | Player commands |
+| `:ai` | AI decisions |
+| `:combat` | Combat events |
+| `:movement` | Unit movement |
+| `:gather` | Resource gathering |
+| `:production` | Unit training |
+| `:audio` | Sound system |
+| `:repl` | REPL status |
