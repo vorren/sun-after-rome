@@ -1,10 +1,13 @@
--- aurelius.render.sprites --- placeholder sprite rendering with interpolation.
--- Supports smooth movement via frame interpolation and health bars.
+-- aurelius.render.sprites --- sprite rendering with interpolation.
+-- Loads actual sprites for villagers, falls back to colored circles for other units.
 
 local world = require("src.world")
 local iso = require("src.render.iso")
 local interpolation = require("src.render.interpolation")
 local camera = require("src.render.camera")
+local sprite_sheet = require("src.render.sprite-sheet")
+local animation = require("src.render.animation")
+local log = require("src.log")
 
 local tile_w = 64
 local tile_h = 32
@@ -29,6 +32,72 @@ local node_colors = {
 
 local grid_visible = true
 
+local entity_animations = {}
+local villager_walk_no_wood = nil
+local villager_walk_wood = nil
+
+local function load_villager_sprites()
+  if not villager_walk_no_wood then
+    villager_walk_no_wood = sprite_sheet.load_animation(
+      "assets/units/Villager/Male/Woodcutter/Walk/Carrying no Wood",
+      "Villagerwalk", 75)
+    log.info("sprites", "Loaded villager walk sprites (no wood)")
+  end
+  if not villager_walk_wood then
+    villager_walk_wood = sprite_sheet.load_animation(
+      "assets/units/Villager/Male/Woodcutter/Walk/Carrying Wood",
+      "Villagerwalk", 75)
+    log.info("sprites", "Loaded villager walk sprites (with wood)")
+  end
+end
+
+local function get_or_create_animation(eid, tag, task)
+  if entity_animations[eid] then
+    return entity_animations[eid]
+  end
+  local sprites = nil
+  if task and tag == "villager" and (task.kind == "gather" or task.kind == "move") then
+    if task and task.target then
+      sprites = villager_walk_wood
+    else
+      sprites = villager_walk_no_wood
+    end
+  end
+  local anim = nil
+  if sprites then
+    anim = animation.make_animation(sprites, 15, true)
+  end
+  if anim then
+    entity_animations[eid] = anim
+  end
+  return anim
+end
+
+local function entity_direction(w, eid)
+  local task = world.world_get(w, eid, "task")
+  local pos = world.world_get(w, eid, "position")
+  if not task or task.kind ~= "move" or not task.tx or not task.ty then
+    return 0
+  end
+  local dx = task.tx - (pos and pos.x or 0)
+  local dy = task.ty - (pos and pos.y or 0)
+  if math.abs(dx) <= 0.1 and math.abs(dy) <= 0.1 then
+    return 0
+  end
+  local angle = math.atan2(dy, dx)
+  if angle <= -2.4 then
+    return 0
+  elseif angle <= -0.7 then
+    return 1
+  elseif angle <= 0 then
+    return 2
+  elseif angle <= 0.7 then
+    return 3
+  else
+    return 4
+  end
+end
+
 local function toggle_grid()
   grid_visible = not grid_visible
 end
@@ -41,18 +110,16 @@ local function get_color(tag)
 end
 
 local function health_bar_color(ratio)
-  -- Get color based on health ratio (0-1). Green → yellow → red.
   if ratio >= 0.6 then
-    return {0.2, 0.8, 0.2}    -- green
+    return {0.2, 0.8, 0.2}
   elseif ratio >= 0.3 then
-    return {0.9, 0.9, 0.2}    -- yellow
+    return {0.9, 0.9, 0.2}
   else
-    return {0.9, 0.2, 0.2}    -- red
+    return {0.9, 0.2, 0.2}
   end
 end
 
 local function draw_health_bar(w, eid, sx, sy)
-  -- Draw health bar above entity at screen position (sx, sy).
   local health = world.world_get(w, eid, "health")
   local kind = world.world_get(w, eid, "kind")
   if health and kind then
@@ -65,10 +132,8 @@ local function draw_health_bar(w, eid, sx, sy)
       local bar_y = sy - 20
       local fill_w = bar_w * ratio
       local color = health_bar_color(ratio)
-      -- background
       love.graphics.setColor(0.2, 0.15, 0.1)
       love.graphics.rectangle("fill", bar_x, bar_y, bar_w, bar_h)
-      -- fill
       love.graphics.setColor(color[1], color[2], color[3])
       love.graphics.rectangle("fill", bar_x, bar_y, fill_w, bar_h)
     end
@@ -76,11 +141,9 @@ local function draw_health_bar(w, eid, sx, sy)
 end
 
 local function draw_idle_indicator(w, eid, sx, sy)
-  -- Draw idle indicator above unit (flashing circle).
   local task = world.world_get(w, eid, "task")
   local owner = world.world_get(w, eid, "owner")
   if task and task.kind == "idle" and owner and owner.player == 0 then
-    -- flash based on tick
     local flash = math.floor((w.tick or 0) / 10)
     local alpha_val
     if flash % 2 == 0 then
@@ -94,7 +157,6 @@ local function draw_idle_indicator(w, eid, sx, sy)
 end
 
 local function draw_rally_point(w, eid)
-  -- Draw rally point flag for buildings.
   local producer = world.world_get(w, eid, "producer")
   local pos = world.world_get(w, eid, "position")
   if producer and producer.rally_x and producer.rally_y and pos then
@@ -102,11 +164,9 @@ local function draw_rally_point(w, eid)
     local raw_sx, raw_sy = iso.to_screen(producer.rally_x, producer.rally_y, tile_w, tile_h)
     local sx = raw_sx + offset_x
     local sy = raw_sy + offset_y
-    -- flag pole
     love.graphics.setColor(0.8, 0.8, 0.8)
     love.graphics.setLineWidth(2)
     love.graphics.line(sx, sy, sy - 20)
-    -- flag
     love.graphics.setColor(0.9, 0.2, 0.2)
     love.graphics.rectangle("fill", sx, sy - 20, 10, 8)
     love.graphics.setLineWidth(1)
@@ -120,25 +180,38 @@ local function draw_entity(w, eid)
     local tag = kind.tag
     local raw_sx, raw_sy = iso.to_screen(pos.x, pos.y, tile_w, tile_h)
     local offset_x, offset_y = camera.get_offset()
-    local color = get_color(tag)
     local sx = raw_sx + offset_x
     local sy = raw_sy + offset_y
-    if building_colors[tag] then
-      love.graphics.setColor(color[1], color[2], color[3])
-      love.graphics.rectangle("fill", sx - 24, sy - 32, 48, 64)
-      love.graphics.setColor(0, 0, 0)
-      love.graphics.rectangle("line", sx - 24, sy - 32, 48, 64)
+    local task = world.world_get(w, eid, "task")
+    local anim = get_or_create_animation(eid, tag, task)
+    if anim then
+      animation.update(anim, 1 / 60)
+      local dir = entity_direction(w, eid)
+      local sprite = animation.get_sprite(anim, dir)
+      if sprite and sprite.image then
+        love.graphics.setColor(1, 1, 1)
+        if sprite.mirror then
+          love.graphics.draw(sprite.image, sx + 32, sy, 0, -1, 1, 32, 0)
+        else
+          love.graphics.draw(sprite.image, sx - 32, sy, 0, 1, 1, 0, 0)
+        end
+      end
     else
-      love.graphics.setColor(color[1], color[2], color[3])
-      love.graphics.circle("fill", sx, sy - 8, 8)
-      love.graphics.setColor(0, 0, 0)
-      love.graphics.circle("line", sx, sy - 8, 8)
+      local color = get_color(tag)
+      if building_colors[tag] then
+        love.graphics.setColor(color[1], color[2], color[3])
+        love.graphics.rectangle("fill", sx - 24, sy - 32, 48, 64)
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.rectangle("line", sx - 24, sy - 32, 48, 64)
+      else
+        love.graphics.setColor(color[1], color[2], color[3])
+        love.graphics.circle("fill", sx, sy - 8, 8)
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.circle("line", sx, sy - 8, 8)
+      end
     end
-    -- draw health bar above entity
     draw_health_bar(w, eid, sx, sy)
-    -- draw idle indicator
     draw_idle_indicator(w, eid, sx, sy)
-    -- draw rally point for buildings
     if building_colors[tag] then
       draw_rally_point(w, eid)
     end
@@ -166,6 +239,7 @@ local function draw_isometric_grid(w)
 end
 
 local function draw_world(w)
+  load_villager_sprites()
   draw_isometric_grid(w)
   local entities = {}
   for _, pair in ipairs(world.world_query(w, "kind")) do

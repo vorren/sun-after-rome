@@ -11,9 +11,12 @@ function love.load()
   local ok, err = pcall(function()
     local hud = require("src.render.hud")
     local sprites = require("src.render.sprites")
-    local floating_text = require("src.render.floating_text")
+    local floating_text = require("src.render.floating-text")
+    local ui = require("src.render.ui")
     -- Test cursor initialization
     hud.init_cursors()
+    -- Initialize UI theme
+    ui.init()
     -- Test basic world creation
     local w = world.make_world({width = 24, height = 16, players = 2, seed = 42})
     world.spawn_bang(w, "town-centre", {owner = 0, x = 3, y = 3})

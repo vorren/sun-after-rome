@@ -38,6 +38,7 @@ return {
   ["rng-below!"] = rng_below,
   ["rng_below!"] = rng_below,
   rng_below_bang = rng_below,
+  rng_range = rng_range,
   ["rng-range!"] = rng_range,
   ["rng_range!"] = rng_range,
   rng_range_bang = rng_range,

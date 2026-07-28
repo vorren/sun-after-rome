@@ -67,7 +67,7 @@ return {
     ai.ai_system(w, 0)
     local found_advance = false
     for _, o in ipairs(w.orders) do
-      if o.tag == "advance-age" then
+      if o.tag == "advance_age" then
         found_advance = true
       end
     end
@@ -81,7 +81,7 @@ return {
     ai.ai_system(w, 0)
     local found_advance = false
     for _, o in ipairs(w.orders) do
-      if o.tag == "advance-age" then
+      if o.tag == "advance_age" then
         found_advance = true
       end
     end

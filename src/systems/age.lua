@@ -4,7 +4,7 @@
 local world = require("src.world")
 
 local function age_system(w)
-  for p = 1, w.num_players do
+  for p = 0, w.num_players - 1 do
     local left = world.age_progress(w, p)
     if left then
       if left <= 1 then

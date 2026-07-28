@@ -37,6 +37,10 @@ function make_task(kind, target, tx, ty, phase)
   return {kind = kind, target = target, tx = tx, ty = ty, phase = phase}
 end
 
+function make_task_queue()
+  return {pending = {}}
+end
+
 return {
   make_position = make_position,
   make_owner = make_owner,

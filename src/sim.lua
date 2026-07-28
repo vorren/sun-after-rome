@@ -33,7 +33,7 @@ local systems = {}
 
 local function init_systems()
   systems = {
-    orders.apply_orders,
+    orders["apply-orders!"],
     controller_dispatch,
     production.production_system,
     age.age_system,

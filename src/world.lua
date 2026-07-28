@@ -7,7 +7,7 @@ local content = require("src.content")
 local rng = require("src.rng")
 
 local component_types =
-  {"position", "owner", "kind", "health", "carry", "node", "cooldown", "producer", "task"}
+  {"position", "owner", "kind", "health", "carry", "node", "cooldown", "producer", "task", "task-queue"}
 
 local function make_world(opts)
   local width = opts.width
@@ -193,6 +193,7 @@ local function spawn(w, tag, opts)
   end
   if tag == "villager" or content.kind_stat(tag, "damage", 0) > 0 then
     world_add(w, id, "task", components.make_task("idle", nil, nil, nil, nil))
+    world_add(w, id, "task-queue", components.make_task_queue())
   end
   return id
 end
@@ -254,6 +255,8 @@ local function copy_component(ct, v)
     return components.make_producer(copy_table(v.queue), v.progress)
   elseif ct == "task" then
     return components.make_task(v.kind, v.target, v.tx, v.ty, v.phase)
+  elseif ct == "task-queue" then
+    return {pending = copy_table(v.pending)}
   else
     return copy_table(v)
   end
@@ -293,6 +296,7 @@ return {
   world_get = world_get,
   ["world-get"] = world_get,
   world_has = world_has,
+  ["world-has?"] = world_has,
   world_remove_component = world_remove_component,
   world_query = world_query,
   ["world-query"] = world_query,
@@ -306,7 +310,9 @@ return {
   ["player-age"] = player_age,
   set_player_age = set_player_age,
   age_progress = age_progress,
+  ["age-progress"] = age_progress,
   set_age_progress = set_age_progress,
+  ["set-age-progress!"] = set_age_progress,
   set_age_progress_bang = set_age_progress,
   effective_max_hp = effective_max_hp,
   effective_gather_rate = effective_gather_rate,
@@ -319,6 +325,7 @@ return {
   can_afford_q = can_afford,
   ["can-afford?"] = can_afford,
   pay = pay,
+  ["pay!"] = pay,
   pay_bang = pay,
   snapshot = snapshot,
   component_types = component_types

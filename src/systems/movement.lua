@@ -129,6 +129,14 @@ local function movement_system(w)
     if t.kind == "move" then
       if at_tile(w, eid, t.tx, t.ty) then
         t.kind = "idle"
+        local task_queue = world.world_get(w, eid, "task-queue")
+        if task_queue and #task_queue.pending > 0 then
+          local next_order = table.remove(task_queue.pending, 1)
+          t.kind = next_order.tag
+          if next_order.tx then t.tx = next_order.tx end
+          if next_order.ty then t.ty = next_order.ty end
+          if next_order.target then t.target = next_order.target end
+        end
       else
         step_toward(w, eid, t.tx, t.ty)
       end

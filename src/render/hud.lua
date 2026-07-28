@@ -196,16 +196,29 @@ local function handle_command_click(x, y, w)
   end
 end
 
-local function handle_right_click(x, y, w)
+local function handle_right_click(x, y, w, shift)
   if #selected_eids > 0 then
     local tile_x, tile_y = tile_at_screen(x, y)
     local target = entity_at_tile(w, tile_x, tile_y)
     local target_type = classify_target(w, target)
     for _, eid in ipairs(selected_eids) do
+      local task_queue = world.world_get(w, eid, "task-queue")
       local kind = world.world_get(w, eid, "kind")
       local producer = world.world_get(w, eid, "producer")
-      -- if this is a building with a producer, set rally point
-      if producer and kind then
+      if shift then
+        if task_queue then
+          local order
+          if target_type == "resource" then
+            order = orders.gather(eid, target)
+          elseif target_type == "enemy" then
+            order = orders.attack(eid, target)
+          else
+            order = orders.move(eid, tile_x, tile_y)
+          end
+          table.insert(task_queue.pending, order)
+          log.debug("hud", "Queued order for " .. eid .. ": " .. order.tag)
+        end
+      elseif producer and kind then
         producer.rally_x = tile_x
         producer.rally_y = tile_y
         log.debug("hud", "Rally point set for " .. tostring(kind.tag) .. " at " .. tile_x .. "," .. tile_y)
@@ -459,7 +472,7 @@ local function handle_click(x, y, w, button, shift)
       end
     end
   elseif button == 2 then
-    handle_right_click(x, y, w)
+    handle_right_click(x, y, w, shift)
   end
 end
 
