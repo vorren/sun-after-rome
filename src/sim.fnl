@@ -9,6 +9,7 @@
 (local gather (require :src.systems.gather))
 (local combat (require :src.systems.combat))
 (local ai (require :src.ai.scripted))
+(local win-condition (require :src.systems.win-condition))
 
 ;; Controller dispatch (ADR-0015/0016): runs after apply-orders!, calls each
 ;; faction's controller tick. AI controllers issue orders that apply next tick.
@@ -36,8 +37,12 @@
                 combat.combat-system]))
 
 (fn tick! [w]
-  (each [_ sys (ipairs systems)]
-    (sys w))
+  ;; only tick if no winner yet
+  (when (not (win-condition.get-winner))
+    (each [_ sys (ipairs systems)]
+      (sys w))
+    ;; check win condition after all systems
+    (win-condition.check-win w))
   (set w.tick (+ 1 w.tick))
   w)
 
