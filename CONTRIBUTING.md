@@ -26,7 +26,22 @@ make test
 2. **Create a branch** — `git checkout -b <ticket-slug>`
 3. **Make your changes** — see below for conventions.
 4. **Run tests** — `make test` (must pass before submitting).
-5. **Submit a PR** — describe what the issue asks for, link the issue.
+5. **Run smoke test** — `make smoke-test` (catches LÖVE runtime errors).
+6. **Submit a PR** — describe what the issue asks for, link the issue.
+
+## Testing
+
+```bash
+make test          # Unit tests (62 tests, runs with plain Lua)
+make smoke-test    # LÖVE smoke test (catches runtime errors, requires LÖVE)
+```
+
+**Smoke test** loads the game and checks for LÖVE API errors at load time. It catches issues like:
+- Missing cursor files
+- Invalid LÖVE API calls
+- Module load failures
+
+The smoke test exits with code 0 (pass) or 1 (fail with traceback).
 
 ## Code conventions
 
