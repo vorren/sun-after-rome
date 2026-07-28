@@ -30,7 +30,7 @@ function make_cooldown(ticks)
 end
 
 function make_producer(queue, progress, rally_x, rally_y)
-  return {queue = queue, progress = progress, ["rally-x"] = rally_x, ["rally-y"] = rally_y}
+  return {queue = queue, progress = progress, rally_x = rally_x, rally_y = rally_y}
 end
 
 function make_task(kind, target, tx, ty, phase)

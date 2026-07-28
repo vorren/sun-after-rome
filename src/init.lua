@@ -20,8 +20,8 @@ local terrain = nil
 local music = nil
 
 local function spawn_initial_entities(w)
-  world.spawn(w, "town_centre", {owner = 0, x = 3, y = 3})
-  world.spawn(w, "town_centre", {owner = 1, x = 20, y = 12})
+  world.spawn(w, "town-centre", {owner = 0, x = 3, y = 3})
+  world.spawn(w, "town-centre", {owner = 1, x = 20, y = 12})
   world.spawn(w, "barracks", {owner = 0, x = 5, y = 3})
   world.spawn(w, "barracks", {owner = 1, x = 18, y = 12})
   world.spawn(w, "villager", {owner = 0, x = 4, y = 4})
@@ -30,8 +30,8 @@ local function spawn_initial_entities(w)
   world.spawn(w, "tree", {x = 8, y = 6})
   world.spawn(w, "tree", {x = 9, y = 6})
   world.spawn(w, "tree", {x = 8, y = 7})
-  world.spawn(w, "gold_mine", {x = 12, y = 8})
-  world.spawn(w, "stone_mine", {x = 15, y = 10})
+  world.spawn(w, "gold-mine", {x = 12, y = 8})
+  world.spawn(w, "stone-mine", {x = 15, y = 10})
 end
 
 local function setup_world()
