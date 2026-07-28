@@ -1,12 +1,13 @@
 # Aurelius --- Fennel + LÖVE build system
 #
 # Targets:
-#   run     - Launch the game
-#   build   - AOT compile all Fennel to Lua
-#   enet    - Compile lua-enet binding (requires libenet + LuaJIT headers)
-#   test    - Run the test suite
-#   clean   - Remove compiled output
-#   repl    - Launch LÖVE with REPL thread
+#   run         - Launch the game
+#   build       - AOT compile all Fennel to Lua
+#   enet        - Compile lua-enet binding (requires libenet + LuaJIT headers)
+#   test        - Run the test suite
+#   smoke-test  - Run LÖVE smoke test (catches runtime errors)
+#   clean       - Remove compiled output
+#   repl        - Launch LÖVE with REPL thread
 
 FENNEL ?= fennel
 LOVE ?= love
@@ -54,6 +55,11 @@ lib/enet.so: /tmp/lua-enet/enet.c
 test: build $(TEST_LUA)
 	@echo "--- Running tests ---"
 	LUA_PATH=";;./lib/?.lua;./?.lua;./?/init.lua" LUA_CPATH=";;./lib/?.so" lua test/run.lua
+
+## smoke-test : Run LÖVE smoke test (catches runtime errors)
+smoke-test: build
+	@echo "--- Running smoke test ---"
+	$(LOVE) . --smoke-test; echo "Exit code: $$?"
 
 test/%.lua: test/%.fnl $(LUAFENNEL)
 	$(FENNEL) --compile $< > $@
