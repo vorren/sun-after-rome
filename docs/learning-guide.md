@@ -10,12 +10,12 @@ Lua has no classes, no arrays, no dictionaries. Everything is a table — a key-
 
 ```lua
 -- Table as object
-local unit = { x = 5, y = 3, health = 100, kind = :villager }
+local unit = { x = 5, y = 3, health = 100, kind = "villager" }
 
 -- Table as array
 local units = { unit1, unit2, unit3 }
 
--- Table as module (what Fennel compiles to)
+-- Table as module
 local M = {}
 function M.greet(name) return "Hello, " .. name end
 return M
@@ -27,7 +27,7 @@ return M
 
 ### Metatables (the "magic")
 
-Metatables let you override what happens when you index, call, or operate on a table. This is how Fennel implements modules, destructuring, and more.
+Metatables let you override what happens when you index, call, or operate on a table. This is how LÖVE implements sprites, canvases, fonts, and more.
 
 ```lua
 -- __index: what happens when you access a missing key
@@ -58,48 +58,45 @@ counter() --> 2
 
 **Why it matters**: Button click handlers, animation tweens, coroutine bodies — all use closures.
 
-## Fennel Essentials
+## Lua Patterns
 
-### Everything is an expression
+### Table composition
 
-Fennel has no statements — everything returns a value. This makes code composable and reduces bugs.
+Build complex structures by nesting tables:
 
-```fennel
-;; Lua: if x then y end (statement)
-;; Fennel: (when x y) (expression)
-(var result (when (> x 0) x))
+```lua
+-- Nested table
+local panel = {
+  x = 10, y = 10,
+  children = {
+    { type = "label", text = "Hello" },
+    { type = "button", text = "Click me" }
+  }
+}
 ```
 
-### Immutable by default
+**Why it matters**: ECS is all about composing components into entities. Tables are the universal building block.
 
-Fennel encourages immutable data. Use `let` for bindings, `set` only when mutation is needed. This reduces side effects.
+### Pattern matching with string.find
 
-```fennel
-(let [x 5
-      y (+ x 1)]  ;; y is 6, x is still 5
-  y)
+Lua uses `string.find` with patterns (similar to regex):
+
+```lua
+local name = "villager"
+if string.find(name, "vil") then
+  print("Found villager!")
+end
 ```
 
-### Destructuring (pattern matching on data)
+### Function as values
 
-Pull apart tables with let bindings:
+Functions are first-class values — pass them as arguments, return them, store them in tables:
 
-```fennel
-(let [{: x : y} position
-      {: health : max-hp} entity]
-  (print x y health))
-```
-
-**Why it matters**: ECS is all about destructuring entities into their components.
-
-### Threading macros (-> and ->>)
-
-Pipe data through transformations. Readable, composable.
-
-```fennel
-(->> (world.world-query game-world :health)
-     (filter (fn [e] (= e.owner 0)))
-     (map (fn [e] e.eid)))
+```lua
+local commands = {
+  move = function(x, y) return {tag = "move", x = x, y = y} end,
+  attack = function(target) return {tag = "attack", target = target} end
+}
 ```
 
 ## LÖVE Rendering
@@ -108,12 +105,13 @@ Pipe data through transformations. Readable, composable.
 
 LÖVE draws in order: first drawn = behind. No depth buffer. You control z-order by draw order.
 
-```fennel
-(fn love.draw []
-  (love.graphics.setColor 0.3 0.2 0.1 1)  ;; background
-  (love.graphics.rectangle :fill 0 0 800 600)
-  (love.graphics.setColor 0.9 0.8 0.6 1)  ;; UI on top
-  (love.graphics.rectangle :fill 10 10 200 50))
+```lua
+function love.draw()
+  love.graphics.setColor(0.3, 0.2, 0.1, 1)  -- background
+  love.graphics.rectangle("fill", 0, 0, 800, 600)
+  love.graphics.setColor(0.9, 0.8, 0.6, 1)  -- UI on top
+  love.graphics.rectangle("fill", 10, 10, 200, 50)
+end
 ```
 
 **Why it matters**: UI must draw on top of the world. Understanding draw order is essential for panels, buttons, floating text.
@@ -122,11 +120,11 @@ LÖVE draws in order: first drawn = behind. No depth buffer. You control z-order
 
 Save and restore the transform state. Use this for UI positioning without affecting world coordinates.
 
-```fennel
-(love.graphics.push)
-(love.graphics.translate 100 100)  ;; move origin
-(love.graphics.rectangle :fill 0 0 50 50)  ;; drawn at 100,100
-(love.graphics.pop)  ;; back to original origin
+```lua
+love.graphics.push()
+love.graphics.translate(100, 100)  -- move origin
+love.graphics.rectangle("fill", 0, 0, 50, 50)  -- drawn at 100,100
+love.graphics.pop()  -- back to original origin
 ```
 
 **Why it matters**: UI panels use push/pop to position relative to screen edges, not world coordinates.
@@ -135,9 +133,9 @@ Save and restore the transform state. Use this for UI positioning without affect
 
 Sets the color for subsequent draw calls. Takes R, G, B, A (0-1 range).
 
-```fennel
-;; Parchment: #F5E6C8 = rgb(245, 230, 200)
-(love.graphics.setColor (/ 245 255) (/ 230 255) (/ 200 255) 1)
+```lua
+-- Parchment: #F5E6C8 = rgb(245, 230, 200)
+love.graphics.setColor(245/255, 230/255, 200/255, 1)
 ```
 
 **Why it matters**: The color palette must be converted to 0-1 range. Create helper functions for each palette color.
@@ -213,32 +211,32 @@ The game uses a data-driven UI system. Layouts are defined as tables, not code. 
 
 ### The Node Schema
 
-Every UI element is a table with a `:type` field:
+Every UI element is a table with a `type` field:
 
-```fennel
-{:type :panel
- :x 10 :y 10
- :w 300 :h 50
- :pad 8
- :dir :horiz
- :gap 4
- :children [...]}
+```lua
+{type = "panel",
+ x = 10, y = 10,
+ w = 300, h = 50,
+ pad = 8,
+ dir = "horiz",
+ gap = 4,
+ children = {...}}
 ```
 
 **Required field:**
-- `:type` — `:panel`, `:label`, `:icon`, `:bar`, or `:button`
+- `type` — `"panel"`, `"label"`, `"icon"`, `"bar"`, or `"button"`
 
 **Positioning (relative):**
-- `:x :left` — left edge
-- `:x :right` — right edge
-- `:x :center` — centered
-- `:x :right-120` — 120px from right edge
-- `:y :top` — top edge
-- `:y :bottom` — bottom edge
-- `:y :bottom-40` — 40px from bottom
+- `x = "left"` — left edge
+- `x = "right"` — right edge
+- `x = "center"` — centered
+- `x = "right-120"` — 120px from right edge
+- `y = "top"` — top edge
+- `y = "bottom"` — bottom edge
+- `y = "bottom-40"` — 40px from bottom
 
 **Auto-layout:**
-- `:dir :vert` — stack children top to bottom
+- `dir = "vert"` — stack children top to bottom
 - `:dir :horiz` — stack children left to right
 - `:gap 4` — space between children
 - `:pad 8` — padding inside panel
@@ -247,33 +245,33 @@ Every UI element is a table with a `:type` field:
 
 The golden hour palette is a separate theme table. Easy to swap.
 
-```fennel
-(local ui (require :src.render.ui))
+```lua
+local ui = require("src.render.ui")
 
-;; Initialize with default theme
-(ui.init {})
+-- Initialize with default theme
+ui.init({})
 
-;; Or with overrides
-(ui.init {:parchment "#FFFFFF"})
+-- Or with overrides
+ui.init({parchment = "#FFFFFF"})
 ```
 
 ### Drawing UI
 
-```fennel
-(local ui (require :src.render.ui))
+```lua
+local ui = require("src.render.ui")
 
-(fn love.draw []
-  (ui.draw
-    (ui.root {}
-      ;; Resource bar
-      {:type :panel
-       :x :top :y :left
-       :w 400 :h 50
-       :dir :horiz :gap 12 :pad 8
-       :children
-       [{:type :label
-         :x 0 :y 0
-         :text "Wood: 120"
+function love.draw()
+  ui.draw(
+    ui.root({},
+      -- Resource bar
+      {type = "panel",
+       x = "top", y = "left",
+       w = 400, h = 50,
+       dir = "horiz", gap = 12, pad = 8,
+       children = {
+         {type = "label",
+          x = 0, y = 0,
+          text = "Wood: 120",
          :font :md :color :sage}
         {:type :bar
          :x 0 :y 0
@@ -297,27 +295,30 @@ The golden hour palette is a separate theme table. Easy to swap.
 
 The UI module handles mouse interaction automatically:
 
-```fennel
-;; In love.update or love.mousepressed
-(fn love.mousemoved [x y]
-  (ui.handle-mouse-move root-node x y))
+```lua
+-- In love.update or love.mousepressed
+function love.mousemoved(x, y)
+  ui.handle_mouse_move(root_node, x, y)
+end
 
-(fn love.mousepressed [x y button]
-  (when (= button 1)
-    (ui.handle-click root-node x y)))
+function love.mousepressed(x, y, button)
+  if button == 1 then
+    ui.handle_click(root_node, x, y)
+  end
+end
 ```
 
 ### Color Resolution
 
 Colors can be:
 - HEXSTRING: `"#F5E6C8"` (primary format)
-- RGB table: `[0.96 0.90 0.78]`
-- Theme key: `:parchment` (resolved from theme)
+- RGB table: `{0.96, 0.90, 0.78}`
+- Theme key: `"parchment"` (resolved from theme)
 
-```fennel
-(ui.resolve "#F5E6C8")  ;; → [0.96, 0.90, 0.78]
-(ui.resolve :parchment)   ;; → [0.96, 0.90, 0.78]
-(ui.resolve [0.5 0.5 0.5])  ;; → [0.5, 0.5, 0.5]
+```lua
+ui.resolve("#F5E6C8")  --> {0.96, 0.90, 0.78}
+ui.resolve("parchment")   --> {0.96, 0.90, 0.78}
+ui.resolve({0.5, 0.5, 0.5})  --> {0.5, 0.5, 0.5}
 ```
 
 ### Exercises

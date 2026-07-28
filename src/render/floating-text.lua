@@ -2,6 +2,7 @@
 
 local world = require("src.world")
 local iso = require("src.render.iso")
+local camera = require("src.render.camera")
 
 local texts = {}
 
@@ -38,8 +39,7 @@ local function draw_texts(w)
     if pos then
       local tile_w = 64
       local tile_h = 32
-      local offset_x = 640
-      local offset_y = 100
+      local offset_x, offset_y = camera.get_offset()
       local sx, sy = iso.to_screen(pos.x, pos.y, tile_w, tile_h)
       local screen_x = sx + offset_x
       local screen_y = sy + offset_y

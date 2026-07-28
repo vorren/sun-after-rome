@@ -97,17 +97,19 @@ local function gather_system(w)
           if not cargo.resource then
             cargo.resource = node.resource
           end
-          local tag = w.store.kind[v].tag
-          local cap = content.gather_capacity(tag)
-          local want = math.max(1, world.effective_gather_rate(w, v))
-          local got = math.min(want, node.amount, cap - cargo.amount)
-          cargo.amount = cargo.amount + got
-          node.amount = node.amount - got
-          if node.amount <= 0 then
-            world.world_remove_entity(w, node_id)
-          end
-          if cargo.amount >= cap then
-            start_drop(w, v, t)
+          local kind = world.world_get(w, v, "kind")
+          if kind then
+            local cap = content.gather_capacity(kind.tag)
+            local want = math.max(1, world.effective_gather_rate(w, v))
+            local got = math.min(want, node.amount, cap - cargo.amount)
+            cargo.amount = cargo.amount + got
+            node.amount = node.amount - got
+            if node.amount <= 0 then
+              world.world_remove_entity(w, node_id)
+            end
+            if cargo.amount >= cap then
+              start_drop(w, v, t)
+            end
           end
         end
 

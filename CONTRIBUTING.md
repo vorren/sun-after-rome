@@ -13,10 +13,9 @@ cd sun-after-rome
 nix develop    # enters dev shell with all deps
 
 # Option 2: Manual install (macOS)
-brew install love fennel lua luajit
+brew install love lua luajit
 
 # Build and test
-make build
 make test
 ```
 
@@ -32,7 +31,7 @@ make test
 ## Testing
 
 ```bash
-make test          # Unit tests (62 tests, runs with plain Lua)
+make test          # Unit tests (69 tests, runs with plain Lua)
 make smoke-test    # LÖVE smoke test (catches runtime errors, requires LÖVE)
 ```
 
@@ -45,14 +44,14 @@ The smoke test exits with code 0 (pass) or 1 (fail with traceback).
 
 ## Code conventions
 
-### Fennel
+### Lua
 
 - **No comments** unless asked.
-- **No method-call syntax** — use `(obj.method obj args)` instead of `(obj:method args)`.
-- **`var` for mutable locals** — `let` bindings are immutable.
+- **Local functions** — use `local function` for module-private functions.
 - **0-based player indices** — game logic uses 0-based factions; Lua tables are 1-indexed (offset by +1).
 - **Orders are data** — all simulation input goes through `world.orders`, never direct mutation.
-- **Determinism** — same seed + same orders = same world. No randomness outside `rng.fnl`.
+- **Determinism** — same seed + same orders = same world. No randomness outside `rng.lua`.
+- **Module exports** — export both underscore and hyphenated names for compatibility.
 
 ### File layout
 
@@ -66,14 +65,14 @@ src/
 
 ### Tests
 
-- Tests live in `test/` as `*_test.fnl`.
+- Tests live in `test/` as `*_test.lua`.
 - Each test file returns a table of test functions (luaunit style).
-- Run with `make test` — all 60 tests must pass.
+- Run with `make test` — all 69 tests must pass.
 - Tests run with plain Lua (not LÖVE), so no `love.*` calls in tests.
 
 ### Content and stats
 
-Unit/building stats live in `src/content.fnl`. When adding new units:
+Unit/building stats live in `src/content.lua`. When adding new units:
 1. Add the kind entry to the `kinds` table
 2. Add a test for the new unit's stats
 3. Update the README controls section if it's player-controllable
@@ -86,7 +85,7 @@ All significant architectural decisions are recorded as ADRs in `docs/adr/`. Rea
 
 **KISS** — Keep It Simple, Stupid. Prefer the simplest solution that works. No abstraction until there's a second use case. No framework, no magic, no cleverness. If a 10-line function does the job, don't make it 50.
 
-**Determinism first** — Same seed + same orders = identical world. If you add randomness, it goes through `rng.fnl`. This is the hardest constraint — it enables lockstep multiplayer and replay.
+**Determinism first** — Same seed + same orders = identical world. If you add randomness, it goes through `rng.lua`. This is the hardest constraint — it enables lockstep multiplayer and replay.
 
 **Orders are data** — All simulation input goes through `world.orders`, never direct mutation. Human, AI, and network controllers all use the same path.
 

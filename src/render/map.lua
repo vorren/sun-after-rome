@@ -1,6 +1,7 @@
 -- aurelius.render.map --- Tiled map loading + procedural generation.
 
 local world = require("src.world")
+local camera = require("src.render.camera")
 
 local current_map = nil
 local use_procedural = true
@@ -34,13 +35,13 @@ end
 local function draw_terrain(terrain, w)
   if terrain then
     local iso = require("src.render.iso")
+    local offset_x, offset_y = camera.get_offset()
     for x = 0, w.width - 1 do
       for y = 0, w.height - 1 do
         local tile = terrain[x][y]
         local raw_sx, raw_sy = iso.to_screen(x, y, 64, 32)
-        -- Offset to center
-        local sx = raw_sx + 640
-        local sy = raw_sy + 100
+        local sx = raw_sx + offset_x
+        local sy = raw_sy + offset_y
         if tile == "water" then
           love.graphics.setColor(0.2, 0.4, 0.8)
         elseif tile == "grass" then
@@ -67,7 +68,9 @@ end
 
 local function init_map(w, seed)
   if use_procedural then
-    return generate_procedural(w, seed)
+    local terrain = generate_procedural(w, seed)
+    w.terrain = terrain
+    return terrain
   end
 end
 

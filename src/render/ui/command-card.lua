@@ -72,7 +72,7 @@ local function build(w, selected_eids, on_command)
       if #buttons > 0 then
         return {
           type = "panel",
-          x = "right-170", y = "bottom-110",
+          x = ":right-170", y = ":bottom-110",
           w = (#buttons * 84) + 8, h = 40,
           dir = "horiz", gap = 4, pad = 4,
           children = buttons
