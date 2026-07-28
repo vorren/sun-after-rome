@@ -11,6 +11,7 @@
 (local ai (require :src.ai.scripted))
 (local interpolation (require :src.render.interpolation))
 (local font (require :src.render.font))
+(local log (require :src.log))
 
 (var game-world nil)
 (var terrain nil)
@@ -31,28 +32,36 @@
   (world.spawn! w :stone-mine {:x 15 :y 10}))
 
 (fn setup-world []
+  (log.info :init "Setting up game world")
   (set game-world (world.make-world {:width 24 :height 16 :players 2 :seed 42}))
   (spawn-initial-entities game-world)
   (world.set-controller! game-world 1 (ai.make-ai-controller 1))
   (set terrain (map.init-map game-world 42))
   (floating-text.clear-texts)
-  (interpolation.clear))
+  (interpolation.clear)
+  (log.info :init "World ready"))
 
 (fn love.load []
+  (log.set-level :info)
+  (log.info :init "Loading Sun After Rome")
   (setup-world)
   (hud.init-cursors)
   (font.load-fonts)
   (let [(ok source) (pcall love.audio.newSource "assets/music/sar.ogg" "stream")]
-    (when ok
-      (set music source)
-      (music:setLooping true)
-      (music:setVolume 0.3)
-      (love.audio.play music)))
+    (if ok
+        (do
+          (set music source)
+          (music:setLooping true)
+          (music:setVolume 0.3)
+          (love.audio.play music)
+          (log.info :audio "Music loaded"))
+        (log.warn :audio "Music file not found")))
   (let [(ok repl) (pcall require "lib.stdio")]
     (when ok
       (repl.init-env! game-world)
-      (repl.start)))
-  (print "Sun After Rome loaded. Press F5 to reset, click to select."))
+      (repl.start)
+      (log.info :repl "REPL ready")))
+  (log.info :init "Game loaded successfully"))
 
 (var accumulator 0)
 (var tick-dt (/ 1 15))
