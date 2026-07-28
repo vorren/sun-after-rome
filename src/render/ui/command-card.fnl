@@ -34,7 +34,7 @@
           kind (world.world-get w eid :kind)]
       (when kind
         (let [commands (if (. content.kinds kind.tag)
-                          (if (. content.kinds.kind.tag :trains)
+                          (if (. content.kinds kind.tag :trains)
                               (building-commands kind.tag)
                               (unit-commands kind.tag))
                           [])

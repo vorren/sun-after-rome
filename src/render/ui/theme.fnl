@@ -95,10 +95,11 @@
   (let [t {}]
     (each [k v (pairs theme-defaults)]
       (tset t k v))
-    (each [k v (pairs (or overrides {}))]
-      (tset t k v))
     (each [k v (pairs golden-hour)]
       (tset t k (resolve-color v)))
+    ;; overrides last so user can customize
+    (each [k v (pairs (or overrides {}))]
+      (tset t k v))
     t))
 
 {: hex-to-rgb : resolve-color : golden-hour : theme-defaults : make-theme}

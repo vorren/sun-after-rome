@@ -193,10 +193,10 @@
 
     ;; Resource bar using UI module
     (ui.draw
-      (ui.root {}
+      (ui.root {:layout :abs}
         ;; Empire status strip
         {:type :panel
-         :x :top :y :left
+         :x :left :y :top
          :w 400 :h (* 50 s)
          :dir :horiz :gap (* 12 s) :pad (* 8 s)
          :alpha 0.85
@@ -225,32 +225,34 @@
                 task (world.world-get w eid :task)
                 health (world.world-get w eid :health)
                 stats (when kind (content.kind-stats kind.tag))
-                max-hp (when stats stats.max-hp)]
+                max-hp (when stats stats.max-hp)
+                children (let [c []]
+                           (table.insert c {:type :label
+                                            :x 0 :y 0
+                                            :text (.. "Selected: " (# selected-eids) " units")
+                                            :font :lg :color :gold})
+                           (when kind
+                             (table.insert c {:type :label
+                                              :x 0 :y (* 20 s)
+                                              :text (.. "Type: " (tostring kind.tag))
+                                              :font :md :color :brown}))
+                           (when task
+                             (table.insert c {:type :label
+                                              :x 0 :y (* 38 s)
+                                              :text (.. "Task: " (tostring task.kind))
+                                              :font :md :color :brown-light}))
+                           (when (and health max-hp)
+                             (table.insert c {:type :bar
+                                              :x 0 :y (* 56 s)
+                                              :w 280 :h (* 12 s)
+                                              :value health.hp :max max-hp
+                                              :fill :gold :bg :brown}))
+                           c)]
             {:type :panel
              :x :left :y :bottom-110
              :w 300 :h 100
              :pad (* 10 s)
-             :children
-             [{:type :label
-               :x 0 :y 0
-               :text (.. "Selected: " (# selected-eids) " units")
-               :font :lg :color :gold}
-              (when kind
-                {:type :label
-                 :x 0 :y (* 20 s)
-                 :text (.. "Type: " (tostring kind.tag))
-                 :font :md :color :brown})
-              (when task
-                {:type :label
-                 :x 0 :y (* 38 s)
-                 :text (.. "Task: " (tostring task.kind))
-                 :font :md :color :brown-light})
-              (when (and health max-hp)
-                {:type :bar
-                 :x 0 :y (* 56 s)
-                 :w 280 :h (* 12 s)
-                 :value health.hp :max max-hp
-                 :fill :gold :bg :brown})]}))
+             :children children}))
 
         ;; Command card
         (command-card.build w selected-eids
@@ -258,7 +260,7 @@
             (if cmd.train
                 (log.info :command-card (.. "Training " cmd.train))
                 (do
-                  (hud.set-command-mode cmd.mode)
+                  (set-command-mode cmd.mode)
                   (log.debug :command-card (.. "Command mode: " cmd.mode))))))
 
         ;; Production queue
@@ -290,7 +292,11 @@
                 eid (entity-at-tile w tile-x tile-y)]
             (if shift
                 (when eid
-                  (if (> (# selected-eids) 0)
+                  ;; check if eid is already selected
+                  (var found false)
+                  (each [_ e (ipairs selected-eids)]
+                    (when (= e eid) (set found true)))
+                  (if found
                       (remove-from-selection eid)
                       (add-to-selection eid)))
                 (if eid (set-selection! eid) (set selected-eids [])))))

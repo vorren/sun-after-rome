@@ -74,12 +74,11 @@
               (let [train-btns []]
                 (each [_ unit-tag (ipairs trains)]
                   (let [cost (content.unit-cost unit-tag)
-                        resources (. world.resources 0)
                         can-afford (or (not cost)
                                        (and
-                                         (or (not cost.wood) (>= (or resources.wood 0) cost.wood))
-                                         (or (not cost.gold) (>= (or resources.gold 0) cost.gold))
-                                         (or (not cost.stone) (>= (or resources.stone 0) cost.stone))))]
+                                         (or (not cost.wood) (>= (world.resource-amount w 0 :wood) cost.wood))
+                                         (or (not cost.gold) (>= (world.resource-amount w 0 :gold) cost.gold))
+                                         (or (not cost.stone) (>= (world.resource-amount w 0 :stone) cost.stone))))]
                     (table.insert train-btns
                       {:type :button
                        :x 0 :y 0

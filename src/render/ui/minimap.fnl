@@ -70,7 +70,7 @@
             (love.graphics.setColor (. color 1) (. color 2) (. color 3))
             (love.graphics.rectangle :fill (- px 1) (- py 1) 3 3)))))))
 
-(fn draw-viewport [w screen-w screen-h]
+(fn draw-viewport [w screen-w screen-h mm-x mm-y]
   "Draw viewport rectangle on minimap."
   (let [pixel-w (/ mm-w w.width)
         pixel-h (/ mm-h w.height)
@@ -89,8 +89,8 @@
     (love.graphics.setColor 1 1 1 0.8)
     (love.graphics.setLineWidth 1)
     (love.graphics.rectangle :line
-                             (* (- tile-cx (/ view-w 2)) pixel-w)
-                             (* (- tile-cy (/ view-h 2)) pixel-h)
+                             (+ mm-x (* (- tile-cx (/ view-w 2)) pixel-w))
+                             (+ mm-y (* (- tile-cy (/ view-h 2)) pixel-h))
                              (* view-w pixel-w)
                              (* view-h pixel-h))))
 
@@ -117,7 +117,7 @@
       (love.graphics.setColor 1 1 1)
       (love.graphics.draw canvas mm-x mm-y)
       ;; draw viewport rectangle
-      (draw-viewport w screen-w screen-h)
+      (draw-viewport w screen-w screen-h mm-x mm-y)
       ;; draw border
       (love.graphics.setColor 0.96 0.90 0.78)
       (love.graphics.setLineWidth 2)

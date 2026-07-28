@@ -68,7 +68,7 @@
             (= rel :center) (/ (- screen-w w) 2)
             (= rel :bottom) 0
             (= rel :top) 0
-            (tonumber offset)))
+            (or (tonumber offset) 0)))
       (or x 0)))
 
 (fn resolve-y [y h screen-h]
@@ -82,7 +82,7 @@
             (= rel :center) (/ (- screen-h h) 2)
             (= rel :right) 0
             (= rel :left) 0
-            (tonumber offset)))
+            (or (tonumber offset) 0)))
       (or y 0)))
 
 ;; ---------------------------------------------------------------------------
@@ -96,11 +96,11 @@
     [w h]))
 
 (fn auto-size-children [node]
-  "Compute size of panel from children."
-  (var max-w 0)
-  (var total-h 0)
+  "Compute sizes from children and set node.w/node.h if not already set."
   (let [dir (or node.dir :vert)
         gap (or node.gap current-theme.gap)]
+    (var max-w 0)
+    (var total-h 0)
     (each [_ child (ipairs (or node.children []))]
       (auto-size-children child)
       (if (= dir :vert)
@@ -114,26 +114,30 @@
       (set total-h (- total-h gap)))
     (when (= dir :horiz)
       (set max-w (- max-w gap)))
-    (values max-w total-h)))
+    ;; write back to node if not already set
+    (when (not node.w) (set node.w max-w))
+    (when (not node.h) (set node.h total-h))))
 
 (fn layout-children [node]
-  "Position children in panel based on :dir and :gap."
-  (let [dir (or node.dir :vert)
-        gap (or node.gap current-theme.gap)
-        pad (or node.pad current-theme.pad)
-        pad-top (or node.pad-top pad)
-        pad-left (or node.pad-left pad)
-        x0 (+ node.x pad-left)
-        y0 (+ node.y pad-top)]
-    (var cx x0)
-    (var cy y0)
-    (each [_ child (ipairs (or node.children []))]
-      (set child.x cx)
-      (set child.y cy)
-      (if (= dir :vert)
-          (set cy (+ cy (or child.h 0) gap))
-          (set cx (+ cx (or child.w 0) gap)))
-      (layout-children child))))
+  "Position children in panel based on :dir and :gap.
+   If node has :layout :abs, skip positioning children (they use absolute positions)."
+  (when (not= node.layout :abs)
+    (let [dir (or node.dir :vert)
+          gap (or node.gap current-theme.gap)
+          pad (or node.pad current-theme.pad)
+          pad-top (or node.pad-top pad)
+          pad-left (or node.pad-left pad)
+          x0 (+ node.x pad-left)
+          y0 (+ node.y pad-top)]
+      (var cx x0)
+      (var cy y0)
+      (each [_ child (ipairs (or node.children []))]
+        (set child.x cx)
+        (set child.y cy)
+        (if (= dir :vert)
+            (set cy (+ cy (or child.h 0) gap))
+            (set cx (+ cx (or child.w 0) gap)))
+        (layout-children child)))))
 
 (fn resolve-position [node screen-w screen-h]
   "Resolve relative positions to absolute."
@@ -279,7 +283,11 @@
     (each [_ child (ipairs (or node.children []))]
       (let [child-hit (hit-test child px py)]
         (when child-hit
-          (set result child-hit)))))
+          ;; prefer buttons over other types
+          (if (= child-hit.type :button)
+              (set result child-hit)
+              (when (not= result.type :button)
+                (set result child-hit)))))))
   result)
 
 ;; ---------------------------------------------------------------------------

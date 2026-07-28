@@ -74,8 +74,7 @@
 (fn entity-direction [w eid]
   "Determine which direction set (0-4) to use based on entity movement."
   (let [task (world.world-get w eid :task)
-        pos (world.world-get w eid :position)
-        prev-pos (when pos {:x pos.x :y pos.y})]
+        pos (world.world-get w eid :position)]
     ;; default to south (0) if no task or not moving
     (if (or (not task) (not= task.kind :move) (not task.tx) (not task.ty))
         0
@@ -84,18 +83,14 @@
               dy (- task.ty (or pos.y 0))]
           (if (and (<= (math.abs dx) 0.1) (<= (math.abs dy) 0.1))
               0  ;; stationary, face south
-              ;; determine direction based on dx/dy
+              ;; determine direction based on angle
               (let [angle (math.atan2 dy dx)]
-                ;; convert angle to direction index (0-4)
                 ;; south (down) = 0, south-west = 1, west = 2, north-west = 3, north = 4
-                (if (> angle (* -2.4)) (<= angle (* -0.7))  ;; roughly south-west
-                    1
-                    (> angle (* -0.7)) (<= angle 0)  ;; roughly west
-                    2
-                    (> angle 0) (<= angle 0.7)  ;; roughly north-west
-                    3
-                    4  ;; north
-                    )))))))
+                (if (<= angle -2.4) 0      ;; south (near -pi)
+                    (<= angle -0.7) 1      ;; south-west
+                    (<= angle 0) 2         ;; west
+                    (<= angle 0.7) 3       ;; north-west
+                    4)))))))                ;; north
 
 (fn toggle-grid []
   (set grid-visible (not grid-visible)))
