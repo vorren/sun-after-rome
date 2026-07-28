@@ -129,21 +129,24 @@
           target (entity-at-tile w tile-x tile-y)
           target-type (classify-target w target)]
       (each [_ eid (ipairs selected-eids)]
-        (let [task-queue (world.world-get w eid :task-queue)]
+        (let [task-queue (world.world-get w eid :task-queue)
+              kind (world.world-get w eid :kind)
+              producer (world.world-get w eid :producer)]
           (if shift
-              ;; shift+right-click: queue order
               (when task-queue
-                (let [order (if (= target-type :resource)
-                                (orders.gather eid target)
-                                (= target-type :enemy)
-                                (orders.attack eid target)
-                                (orders.move eid tile-x tile-y))]
+                (let [order (if (= target-type :resource) (orders.gather eid target)
+                                (= target-type :enemy) (orders.attack eid target)
+                                true (orders.move eid tile-x tile-y))]
                   (table.insert task-queue.pending order)
                   (log.debug :hud (.. "Queued order for " eid ": " order.tag))))
-              ;; normal right-click: replace order
-              (if (= target-type :resource) (issue-gather w eid target)
+              (if (and producer kind)
+                  (do
+                    (set producer.rally-x tile-x)
+                    (set producer.rally-y tile-y)
+                    (log.debug :hud (.. "Rally point set for " (tostring kind.tag) " at " tile-x "," tile-y)))
+                  (= target-type :resource) (issue-gather w eid target)
                   (= target-type :enemy) (issue-attack w eid target)
-                  true (issue-move w eid tile-x tile-y))))))))
+                  (issue-move w eid tile-x tile-y))))))))
 
 (fn handle-mouse-move [x y w]
   (when cursor-default
@@ -201,7 +204,8 @@
         gold (world.resource-amount w pl :gold)
         stone (world.resource-amount w pl :stone)
         age (world.player-age w pl)
-        prog (world.age-progress w pl)]
+        prog (world.age-progress w pl)
+        (screen-w screen-h) (love.graphics.getDimensions)]
 
     ;; Resource bar using UI module
     (ui.draw
@@ -270,7 +274,7 @@
             (if cmd.train
                 (log.info :command-card (.. "Training " cmd.train))
                 (do
-                  (hud.set-command-mode cmd.mode)
+                  (set-command-mode cmd.mode)
                   (log.debug :command-card (.. "Command mode: " cmd.mode))))))
 
         ;; Production queue
@@ -284,15 +288,27 @@
            :pad (* 8 s)
            :alpha 0.9
            :children
-           [{:type :label
-             :x 0 :y 0
-             :text (.. (string.upper (tostring command-mode)) " - click target")
-             :font :md :color :gold}]})))
+            [{:type :label
+              :x 0 :y 0
+              :text (.. (string.upper (tostring command-mode)) " - click target")
+              :font :md :color :gold}]})))
 
     ;; Age advancement progress
     (when prog
       (love.graphics.setColor 0.5 0.8 1)
-      (love.graphics.print (.. "Advancing... " prog " ticks left") (* 10 s) (* 70 s)))))
+      (love.graphics.print (.. "Advancing... " prog " ticks left") (* 10 s) (* 70 s)))
+
+    ;; Win condition display
+    (let [win-condition (require :src.systems.win-condition)
+          winner (win-condition.get-winner)]
+      (when winner
+        (love.graphics.setColor 0.96 0.90 0.78)
+        (love.graphics.rectangle :fill (/ (- screen-w 400) 2) (/ (- screen-h 100) 2) 400 100)
+        (love.graphics.setColor 0.24 0.17 0.12)
+        (love.graphics.printf (.. "Player " (+ winner 1) " Wins!")
+                              (/ (- screen-w 400) 2) (+ (/ (- screen-h 100) 2) 20) 400 :center)
+        (love.graphics.printf "Press F5 to restart"
+                              (/ (- screen-w 400) 2) (+ (/ (- screen-h 100) 2) 50) 400 :center)))))
 
 (fn handle-click [x y w button shift]
   (if (= button 1)

@@ -13,6 +13,7 @@
 (local font (require :src.render.font))
 (local log (require :src.log))
 (local minimap (require :src.render.ui.minimap))
+(local win-condition (require :src.systems.win-condition))
 
 (var game-world nil)
 (var terrain nil)
@@ -40,6 +41,8 @@
   (set terrain (map.init-map game-world 42))
   (floating-text.clear-texts)
   (interpolation.clear)
+  (win-condition.reset-winner)
+  (win-condition.start-game)
   (log.info :init "World ready"))
 
 (fn love.load []

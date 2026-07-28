@@ -10,11 +10,14 @@
 (fn love.load []
   (let [(ok err) (pcall
                    (fn []
-                     (let [hud (require :src.render.hud)
-                           sprites (require :src.render.sprites)
-                           floating-text (require :src.render.floating-text)]
-                       ;; Test cursor initialization
-                       (hud.init-cursors)
+                      (let [hud (require :src.render.hud)
+                            sprites (require :src.render.sprites)
+                            floating-text (require :src.render.floating-text)
+                            ui (require :src.render.ui)]
+                        ;; Test cursor initialization
+                        (hud.init-cursors)
+                        ;; Initialize UI theme
+                        (ui.init)
                        ;; Test basic world creation
                        (let [w (world.make-world {:width 24 :height 16 :players 2 :seed 42})]
                          (world.spawn! w :town-centre {:owner 0 :x 3 :y 3})

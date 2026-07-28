@@ -10,6 +10,7 @@
 (fn attack [eid tgt] {:tag :attack :eid eid :target tgt})
 (fn train [prod-id tag] {:tag :train :prod prod-id :unit tag})
 (fn advance-age [player] {:tag :advance-age :player player})
+(fn concede [player] {:tag :concede :player player})
 
 ;; Queueing
 (fn issue! [w order]
@@ -74,6 +75,12 @@
                  (world.pay! w order.player (content.age-cost next-age)))
         (world.set-age-progress! w order.player (content.age-time next-age))
         true))
+
+    :concede
+    (let [win-condition (require :src.systems.win-condition)]
+      ;; conceding player loses — the other player wins
+      (win-condition.set-winner w (if (= order.player 0) 1 0))
+      true)
 
     _ false))
 
