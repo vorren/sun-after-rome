@@ -117,12 +117,9 @@
     :b (orders.issue! game-world (orders.advance-age 1))))
 
 (fn love.mousepressed [x y button shift]
-  ;; check minimap click first
-  (let [(screen-w screen-h) (love.graphics.getDimensions)
-        mm-result (minimap.handle-click x y game-world screen-w screen-h)]
-    (when mm-result
-      ;; minimap clicked — scroll view (TODO: implement camera scroll)
-      (log.debug :init (.. "Minimap click at tile " mm-result.tile-x "," mm-result.tile-y))))
+  ;; check minimap click first (scrolls camera if clicked)
+  (let [(screen-w screen-h) (love.graphics.getDimensions)]
+    (minimap.handle-click x y game-world screen-w screen-h))
   ;; then handle HUD clicks
   (hud.handle-click x y game-world button shift)
   (when (and (= button 1) (not (hud.get-command-mode)))

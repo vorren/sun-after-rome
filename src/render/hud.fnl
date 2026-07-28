@@ -10,6 +10,7 @@
 (local ui (require :src.render.ui))
 (local command-card (require :src.render.ui.command-card))
 (local production-queue (require :src.render.ui.production-queue))
+(local camera (require :src.render.camera))
 
 (var selected-eids [])
 (var command-mode nil)
@@ -68,7 +69,8 @@
     result))
 
 (fn tile-at-screen [screen-x screen-y]
-  (let [tile-w 64 tile-h 32 offset-x 640 offset-y 100
+  (let [tile-w 64 tile-h 32
+        (offset-x offset-y) (camera.get-offset)
         (raw-tx raw-ty) (iso.to-tile (- screen-x offset-x) (- screen-y offset-y) tile-w tile-h)]
     (values (math.floor (+ raw-tx 0.5))
             (math.floor (+ raw-ty 0.5)))))
@@ -152,7 +154,8 @@
     (let [pos (world.world-get w eid :position)
           kind (world.world-get w eid :kind)]
       (when (and pos kind)
-        (let [tile-w 64 tile-h 32 offset-x 640 offset-y 100
+        (let [tile-w 64 tile-h 32
+              (offset-x offset-y) (camera.get-offset)
               (sx sy) (iso.to-screen pos.x pos.y tile-w tile-h)
               screen-x (+ sx offset-x) screen-y (+ sy offset-y)]
           (love.graphics.setColor 0.2 1 0.2 0.8)

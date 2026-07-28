@@ -4,6 +4,7 @@
 
 (local world (require :src.world))
 (local iso (require :src.render.iso))
+(local camera (require :src.render.camera))
 (local log (require :src.log))
 
 (var canvas nil)
@@ -75,10 +76,11 @@
         ;; calculate viewport in tile coordinates
         tile-w 64
         tile-h 32
+        (offset-x offset-y) (camera.get-offset)
         center-x (/ screen-w 2)
         center-y (/ screen-h 2)
-        (tile-cx tile-cy) (iso.to-tile (- center-x iso.screen-offset-x)
-                                       (- center-y iso.screen-offset-y)
+        (tile-cx tile-cy) (iso.to-tile (- center-x offset-x)
+                                       (- center-y offset-y)
                                        tile-w tile-h)
         ;; viewport size in tiles
         view-w (/ screen-w tile-w)
@@ -132,8 +134,9 @@
         ;; convert minimap coords to tile coords
         (let [tile-x (* (/ rel-x mm-w) w.width)
               tile-y (* (/ rel-y mm-h) w.height)]
-          (log.debug :minimap (.. "Click at tile " tile-x "," tile-y))
-          ;; return target tile for scrolling
-          {:tile-x tile-x :tile-y tile-y})))))
+          (log.debug :minimap (.. "Scrolling to tile " tile-x "," tile-y))
+          ;; scroll camera to this tile
+          (camera.scroll-to-tile tile-x tile-y 64 32 screen-w screen-h)
+          true)))))
 
 {: init : draw : toggle : handle-click}

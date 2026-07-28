@@ -4,11 +4,10 @@
 (local world (require :src.world))
 (local iso (require :src.render.iso))
 (local interpolation (require :src.render.interpolation))
+(local camera (require :src.render.camera))
 
 (local tile-w 64)
 (local tile-h 32)
-(local offset-x iso.screen-offset-x)
-(local offset-y iso.screen-offset-y)
 
 (local unit-colors
   {:villager [0.2 0.8 0.2]
@@ -65,12 +64,27 @@
             (love.graphics.setColor (. color 1) (. color 2) (. color 3))
             (love.graphics.rectangle :fill bar-x bar-y fill-w bar-h)))))))
 
+(fn draw-idle-indicator [w eid sx sy]
+  "Draw idle indicator above unit (flashing circle)."
+  (let [task (world.world-get w eid :task)
+        owner (world.world-get w eid :owner)]
+    (when (and task
+               (= task.kind :idle)
+               owner
+               (= owner.player 0))
+      ;; flash based on tick
+      (let [flash (math.floor (/ (or w.tick 0) 10))
+            alpha (if (= (% flash 2) 0) 0.8 0.3)]
+        (love.graphics.setColor 1 0.8 0 alpha)
+        (love.graphics.circle :fill sx (- sy 20) 4)))))
+
 (fn draw-entity [w eid]
   (let [kind (world.world-get w eid :kind)
         pos (interpolation.interpolated-pos w eid)]
     (when (and kind pos)
       (let [tag kind.tag
             (raw-sx raw-sy) (iso.to-screen pos.x pos.y tile-w tile-h)
+            (offset-x offset-y) (camera.get-offset)
             color (. (get-color tag) 1)
             color2 (. (get-color tag) 2)
             color3 (. (get-color tag) 3)
@@ -88,22 +102,25 @@
               (love.graphics.setColor 0 0 0)
               (love.graphics.circle :line sx (- sy 8) 8)))
         ;; draw health bar above entity
-        (draw-health-bar w eid sx sy)))))
+        (draw-health-bar w eid sx sy)
+        ;; draw idle indicator
+        (draw-idle-indicator w eid sx sy)))))
 
 (fn draw-isometric-grid [w]
   (when grid-visible
-    (love.graphics.setColor 0.3 0.3 0.3 0.3)
-    (for [x 0 (- w.width 1)]
-      (for [y 0 (- w.height 1)]
-        (let [(raw-sx raw-sy) (iso.to-screen x y tile-w tile-h)]
-          (var sx (+ raw-sx offset-x))
-          (var sy (+ raw-sy offset-y))
-          (love.graphics.line
-           sx (- sy (/ tile-h 2))
-           (+ sx (/ tile-w 2)) sy
-           sx (+ sy (/ tile-h 2))
-           (- sx (/ tile-w 2)) sy
-           sx (- sy (/ tile-h 2))))))))
+    (let [(offset-x offset-y) (camera.get-offset)]
+      (love.graphics.setColor 0.3 0.3 0.3 0.3)
+      (for [x 0 (- w.width 1)]
+        (for [y 0 (- w.height 1)]
+          (let [(raw-sx raw-sy) (iso.to-screen x y tile-w tile-h)]
+            (var sx (+ raw-sx offset-x))
+            (var sy (+ raw-sy offset-y))
+            (love.graphics.line
+             sx (- sy (/ tile-h 2))
+             (+ sx (/ tile-w 2)) sy
+             sx (+ sy (/ tile-h 2))
+             (- sx (/ tile-w 2)) sy
+             sx (- sy (/ tile-h 2)))))))))
 
 (fn draw-world [w]
   (draw-isometric-grid w)
