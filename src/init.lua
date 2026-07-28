@@ -13,7 +13,7 @@ local interpolation = require("src.render.interpolation")
 local font = require("src.render.font")
 local log = require("src.log")
 local minimap = require("src.render.ui.minimap")
-local win_condition = require("src.systems.win_condition")
+local win_condition = require("src.systems.win-condition")
 
 local game_world = nil
 local terrain = nil
