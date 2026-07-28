@@ -15,7 +15,7 @@ return {
     world.add_resource_bang(w, 0, "stone", 200)
     local before = #world.world_entities(w)
     orders.issue_bang(w, orders.train(1, "knight"))
-    sim.run_bang(w, content.train_time("knight") + 5)
+    sim.run(w, content.train_time("knight") + 5)
     local after = #world.world_entities(w)
     luaunit.assertTrue(after > before)
   end,
@@ -29,7 +29,7 @@ return {
     world.add_resource_bang(w, 0, "stone", 500)
     orders.issue_bang(w, orders.train(1, "pikeman"))
     orders.issue_bang(w, orders.train(1, "knight"))
-    sim.run_bang(w, content.train_time("knight") + 2)
+    sim.run(w, content.train_time("knight") + 2)
     local prod = world.world_get(w, 1, "producer")
     luaunit.assertEquals(prod.queue[1], "pikeman")
   end,
@@ -42,7 +42,7 @@ return {
     world.add_resource_bang(w, 0, "stone", 500)
     local before = #world.world_entities(w)
     orders.issue_bang(w, orders.train(1, "knight"))
-    sim.run_bang(w, 5)
+    sim.run(w, 5)
     local after = #world.world_entities(w)
     luaunit.assertEquals(after, before)
   end,
@@ -57,7 +57,7 @@ return {
     orders.issue_bang(w, orders.train(1, "knight"))
     local prod = world.world_get(w, 1, "producer")
     luaunit.assertEquals(prod.progress, 0)
-    sim.tick_bang(w)
+    sim.tick(w)
     local prod2 = world.world_get(w, 1, "producer")
     luaunit.assertTrue(prod2.progress > 0)
   end,
@@ -72,7 +72,7 @@ return {
     local cost = content.unit_cost("knight")
     local before_wood = world.resource_amount(w, 0, "wood")
     orders.issue_bang(w, orders.train(1, "knight"))
-    sim.tick_bang(w)
+    sim.tick(w)
     local after_wood = world.resource_amount(w, 0, "wood")
     luaunit.assertEquals(after_wood, before_wood - (cost.wood or 0))
   end,

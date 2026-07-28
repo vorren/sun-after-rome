@@ -29,8 +29,16 @@ end
 
 return {
   ["make-rng"] = make_rng,
+  make_rng = make_rng,
   ["rng-state"] = rng_state,
+  rng_state = rng_state,
   ["rng-next!"] = rng_next,
+  rng_next_bang = rng_next,
+  ["rng_next!"] = rng_next,
   ["rng-below!"] = rng_below,
+  ["rng_below!"] = rng_below,
+  rng_below_bang = rng_below,
   ["rng-range!"] = rng_range,
+  ["rng_range!"] = rng_range,
+  rng_range_bang = rng_range,
 }

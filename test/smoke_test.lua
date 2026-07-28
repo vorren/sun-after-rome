@@ -19,7 +19,7 @@ function love.load()
     world.spawn_bang(w, "town-centre", {owner = 0, x = 3, y = 3})
     world.spawn_bang(w, "villager", {owner = 0, x = 4, y = 4})
     -- Test a tick
-    sim.tick_bang(w)
+    sim.tick(w)
     -- Test HUD draw
     hud.draw_hud(w)
     -- Test selection highlight

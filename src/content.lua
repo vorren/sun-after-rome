@@ -45,6 +45,7 @@ local function attack_of(tag)
     range = kind_stat(tag, "range", 0),
     armour = kind_stat(tag, "armour", "none"),
     ["bonus-vs"] = kind_stat(tag, "bonus-vs", {}),
+    bonus_vs = kind_stat(tag, "bonus-vs", {}),
     cooldown = kind_stat(tag, "cooldown", 1),
   }
 end
@@ -80,8 +81,10 @@ local function age_time(level) return ages[level].time end
 return {
   resource_types = resource_types,
   kind_stat = kind_stat,
+  ["kind-stat"] = kind_stat,
   kind_stats = kind_stats,
   unit_cost = unit_cost,
+  ["unit-cost"] = unit_cost,
   train_time = train_time,
   gather_capacity = gather_capacity,
   gather_resource = gather_resource,
@@ -91,6 +94,7 @@ return {
   age_bonus = age_bonus,
   max_age = max_age,
   age_cost = age_cost,
+  ["age-cost"] = age_cost,
   age_time = age_time,
   kinds = kinds,
 }

@@ -138,5 +138,6 @@ end
 
 return {
   ["build"] = build,
-  ["resource-cost-text"] = resource_cost_text
+  ["resource-cost-text"] = resource_cost_text,
+  resource_cost_text = resource_cost_text
 }

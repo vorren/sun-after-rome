@@ -36,3 +36,16 @@ end
 function make_task(kind, target, tx, ty, phase)
   return {kind = kind, target = target, tx = tx, ty = ty, phase = phase}
 end
+
+return {
+  make_position = make_position,
+  make_owner = make_owner,
+  make_kind = make_kind,
+  make_health = make_health,
+  make_carry = make_carry,
+  make_node = make_node,
+  make_cooldown = make_cooldown,
+  make_producer = make_producer,
+  make_task = make_task,
+  make_task_queue = make_task_queue
+}

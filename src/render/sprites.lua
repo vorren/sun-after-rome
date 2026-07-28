@@ -192,8 +192,13 @@ end
 
 return {
   ["draw-world"] = draw_world,
+  draw_world = draw_world,
   ["draw-entity"] = draw_entity,
+  draw_entity = draw_entity,
   ["tile-w"] = tile_w,
+  tile_w = tile_w,
   ["tile-h"] = tile_h,
-  ["toggle-grid"] = toggle_grid
+  tile_h = tile_h,
+  ["toggle-grid"] = toggle_grid,
+  toggle_grid = toggle_grid
 }

@@ -286,13 +286,23 @@ end
 
 return {
   ["ai-system"] = ai_system,
+  ai_system = ai_system,
   ["make-ai-controller"] = make_ai_controller,
+  make_ai_controller = make_ai_controller,
   ["make-ai-takeover"] = make_ai_takeover,
+  make_ai_takeover = make_ai_takeover,
   ["faction-entities"] = faction_entities,
+  faction_entities = faction_entities,
   ["has-building?"] = has_building,
+  ["has_building?"] = has_building,
   ["get-building"] = get_building,
+  get_building = get_building,
   ["count-units"] = count_units,
+  count_units = count_units,
   ["idle-villagers"] = idle_villagers,
+  idle_villagers = idle_villagers,
   ["nearest-node"] = nearest_node,
+  nearest_node = nearest_node,
   ["nearest-enemy"] = nearest_enemy,
+  nearest_enemy = nearest_enemy,
 }

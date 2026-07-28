@@ -127,8 +127,13 @@ return {
   ["attack"] = attack,
   ["train"] = train,
   ["advance-age"] = advance_age,
+  advance_age = advance_age,
   ["issue!"] = issue_bang,
+  issue_bang = issue_bang,
   ["apply-orders!"] = apply_orders,
+  ["apply_orders!"] = apply_orders,
   ["orders->log"] = orders__log,
+  ["orders>_log"] = orders__log,
   ["log->orders"] = log__orders,
+  ["log>_orders"] = log__orders,
 }

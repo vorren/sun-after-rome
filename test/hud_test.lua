@@ -12,10 +12,9 @@ return {
   end,
 
   ["test-hud-uses-correct-love-api"] = function()
-    local f = io.open("src/render/hud.fnl", "r")
+    local f = io.open("src/render/hud.lua", "r")
     local content = f:read("*a")
     f:close()
     luaunit.assertNotNil(string.find(content, "love%.graphics%.setLineWidth"))
-    luaunit.assertNil(string.find(content, "love%.graphics%.set%-line%-width"))
   end,
 }

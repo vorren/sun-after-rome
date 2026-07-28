@@ -49,5 +49,7 @@ end
 return {
   personalities = personalities,
   ["get-personality"] = get_personality,
+  get_personality = get_personality,
   ["default-personality"] = default_personality,
+  default_personality = default_personality,
 }

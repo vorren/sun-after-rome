@@ -73,6 +73,9 @@ end
 
 return {
   ["generate-procedural"] = generate_procedural,
+  generate_procedural = generate_procedural,
   ["draw-terrain"] = draw_terrain,
-  ["init-map"] = init_map
+  draw_terrain = draw_terrain,
+  ["init-map"] = init_map,
+  init_map = init_map
 }

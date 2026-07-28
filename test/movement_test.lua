@@ -16,7 +16,7 @@ return {
     t.tx = 10
     t.ty = 10
     local pos = world.world_get(w, 1, "position")
-    sim.tick_bang(w)
+    sim.tick(w)
     luaunit.assertTrue(pos.x > 4 or pos.y > 4)
   end,
 
@@ -28,7 +28,7 @@ return {
     local t2 = world.world_get(w, 2, "task")
     t1.kind = "move"; t1.tx = 20; t1.ty = 0
     t2.kind = "move"; t2.tx = 20; t2.ty = 2
-    sim.tick_bang(w)
+    sim.tick(w)
     local p1 = world.world_get(w, 1, "position")
     local p2 = world.world_get(w, 2, "position")
     luaunit.assertTrue(p2.x > p1.x)
@@ -41,7 +41,7 @@ return {
     t.kind = "move"
     t.tx = 20
     t.ty = 20
-    sim.tick_bang(w)
+    sim.tick(w)
     local pos = world.world_get(w, 1, "position")
     luaunit.assertTrue(pos.x <= 10)
     luaunit.assertTrue(pos.y <= 10)
@@ -54,7 +54,7 @@ return {
     t.kind = "move"
     t.tx = 5
     t.ty = 5
-    sim.tick_bang(w)
+    sim.tick(w)
     local t2 = world.world_get(w, 1, "task")
     luaunit.assertEquals(t2.kind, "idle")
   end,
@@ -67,7 +67,7 @@ return {
     local t2 = world.world_get(w, 2, "task")
     t1.kind = "move"; t1.tx = 8; t1.ty = 3
     t2.kind = "move"; t2.tx = 1; t2.ty = 3
-    sim.tick_bang(w)
+    sim.tick(w)
     local p1 = world.world_get(w, 1, "position")
     local p2 = world.world_get(w, 2, "position")
     luaunit.assertTrue(p1.x >= 3)

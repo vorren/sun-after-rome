@@ -85,5 +85,7 @@ end
 return {
   ["build"] = build,
   ["unit-commands"] = unit_commands,
-  ["building-commands"] = building_commands
+  unit_commands = unit_commands,
+  ["building-commands"] = building_commands,
+  building_commands = building_commands
 }

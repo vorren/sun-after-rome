@@ -11,7 +11,7 @@ return {
     world.spawn_bang(w, "villager", {owner = 0, x = 4, y = 4})
     world.spawn_bang(w, "tree", {x = 5, y = 4})
     orders.issue_bang(w, orders.gather(2, 3))
-    sim.run_bang(w, 40)
+    sim.run(w, 40)
     local wood = world.resource_amount(w, 0, "wood")
     luaunit.assertTrue(wood > 0)
   end,
@@ -25,8 +25,8 @@ return {
     local node = world.world_get(w, tree, "node")
     node.amount = 5
     orders.issue_bang(w, orders.gather(2, tree))
-    sim.run_bang(w, 50)
-    luaunit.assertFalse(world.world_has_q(w, tree, "node"))
+    sim.run(w, 50)
+    luaunit.assertFalse(world.world_has(w, tree, "node"))
   end,
 
   ["test-multiple-resource-types"] = function()
@@ -38,7 +38,7 @@ return {
     world.spawn_bang(w, "gold-mine", {x = 5, y = 5})
     orders.issue_bang(w, orders.gather(2, 4))
     orders.issue_bang(w, orders.gather(3, 5))
-    sim.run_bang(w, 50)
+    sim.run(w, 50)
     local wood = world.resource_amount(w, 0, "wood")
     local gold = world.resource_amount(w, 0, "gold")
     luaunit.assertTrue(wood > 0)

@@ -50,8 +50,12 @@ end
 
 return {
   ["save-positions"] = save_positions,
+  save_positions = save_positions,
   ["set-alpha"] = set_alpha,
+  set_alpha = set_alpha,
   ["get-alpha"] = get_alpha,
+  get_alpha = get_alpha,
   ["interpolated-pos"] = interpolated_pos,
+  interpolated_pos = interpolated_pos,
   ["clear"] = clear
 }

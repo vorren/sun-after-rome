@@ -13,7 +13,7 @@ return {
     orders.issue_bang(w, orders.move(2, 10, 10))
     luaunit.assertEquals(#w.orders, 1)
     -- Apply orders
-    orders.apply_orders_bang(w)
+    orders["apply-orders!"](w)
     luaunit.assertEquals(#w.orders, 0)
     luaunit.assertEquals(#w.log, 1)
   end,

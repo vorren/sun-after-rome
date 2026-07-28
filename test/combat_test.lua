@@ -27,10 +27,10 @@ return {
     orders.issue_bang(w, orders.attack(1, 2))
     -- Attack for 60 ticks
     for _ = 1, 60 do
-      sim.tick_bang(w)
+      sim.tick(w)
     end
     -- Archer should be dead
-    luaunit.assertFalse(world.world_has_q(w, 2, "health"))
+    luaunit.assertFalse(world.world_has(w, 2, "health"))
   end,
 
   ["test-pikeman-bonus-vs-cavalry"] = function()

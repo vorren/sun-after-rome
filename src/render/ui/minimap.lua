@@ -159,5 +159,6 @@ return {
   ["init"] = init,
   ["draw"] = draw,
   ["toggle"] = toggle,
-  ["handle-click"] = handle_click
+  ["handle-click"] = handle_click,
+  handle_click = handle_click
 }

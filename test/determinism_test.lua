@@ -38,8 +38,8 @@ return {
     orders.issue_bang(w1, orders.gather(2, 4))
     orders.issue_bang(w2, orders.gather(2, 4))
     -- Run same ticks
-    sim.run_bang(w1, 50)
-    sim.run_bang(w2, 50)
+    sim.run(w1, 50)
+    sim.run(w2, 50)
     -- Signatures must match
     luaunit.assertEquals(world_signature(w1), world_signature(w2))
   end,
@@ -64,9 +64,9 @@ return {
     local w = world.make_world({seed = 42})
     world.spawn_bang(w, "villager", {owner = 0, x = 4, y = 4})
     world.spawn_bang(w, "tree", {x = 8, y = 6})
-    sim.tick_bang(w)
+    sim.tick(w)
     local snap = world.snapshot(w)
-    sim.run_bang(w, 30)
+    sim.run(w, 30)
     -- Snapshot should not have changed
     luaunit.assertEquals(snap.tick, 1)
     -- Live world should have advanced

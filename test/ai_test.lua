@@ -15,7 +15,7 @@ return {
     world.add_resource_bang(w, 0, "wood", 200)
     world.add_resource_bang(w, 0, "gold", 200)
     world.add_resource_bang(w, 0, "stone", 200)
-    world.set_controller_bang(w, 0, ai.make_ai_controller(0))
+    world.set_controller(w, 0, ai.make_ai_controller(0))
     ai.ai_system(w, 0)
     luaunit.assertTrue(#w.orders > 0)
   end,
@@ -150,16 +150,16 @@ return {
     local w = world.make_world({seed = 42})
     world.spawn_bang(w, "town-centre", {owner = 0, x = 3, y = 3})
     world.spawn_bang(w, "villager", {owner = 0, x = 4, y = 4})
-    luaunit.assertTrue(ai.has_building_q(w, 0, "town-centre"))
-    luaunit.assertFalse(ai.has_building_q(w, 0, "barracks"))
-    luaunit.assertFalse(ai.has_building_q(w, 1, "town-centre"))
+    luaunit.assertTrue(ai["has_building?"](w, 0, "town-centre"))
+    luaunit.assertFalse(ai["has_building?"](w, 0, "barracks"))
+    luaunit.assertFalse(ai["has_building?"](w, 1, "town-centre"))
   end,
 
   ["test-personality-villager-target"] = function()
     local aggressive = personalities.get_personality("aggressive")
     local defensive = personalities.get_personality("defensive")
-    luaunit.assertEquals(aggressive.villager_target, 6)
-    luaunit.assertEquals(defensive.villager_target, 8)
+    luaunit.assertEquals(aggressive["villager-target"], 6)
+    luaunit.assertEquals(defensive["villager-target"], 8)
   end,
 
   ["test-ai-uses-personality-villager-target"] = function()
@@ -250,7 +250,7 @@ return {
     world.add_resource_bang(w, 0, "wood", 500)
     world.add_resource_bang(w, 0, "gold", 500)
     world.add_resource_bang(w, 0, "stone", 500)
-    sim.take_player_bang(w, 0)
+    sim.take_player(w, 0)
     local ctrl = world.get_controller(w, 0)
     luaunit.assertEquals(ctrl.type, "ai")
     luaunit.assertNotNil(ctrl.tick)
@@ -264,9 +264,9 @@ return {
     world.add_resource_bang(w, 0, "wood", 500)
     world.add_resource_bang(w, 0, "gold", 500)
     world.add_resource_bang(w, 0, "stone", 500)
-    sim.take_player_bang(w, 0)
-    sim.tick_bang(w)
-    sim.tick_bang(w)
+    sim.take_player(w, 0)
+    sim.tick(w)
+    sim.tick(w)
     luaunit.assertTrue(#w.log > 0)
   end,
 }
