@@ -123,15 +123,27 @@
     (issue-command-to-selected w x y)
     (set command-mode nil)))
 
-(fn handle-right-click [x y w]
+(fn handle-right-click [x y w shift]
   (when (> (# selected-eids) 0)
     (let [(tile-x tile-y) (tile-at-screen x y)
           target (entity-at-tile w tile-x tile-y)
           target-type (classify-target w target)]
       (each [_ eid (ipairs selected-eids)]
-        (if (= target-type :resource) (issue-gather w eid target)
-            (= target-type :enemy) (issue-attack w eid target)
-            true (issue-move w eid tile-x tile-y))))))
+        (let [task-queue (world.world-get w eid :task-queue)]
+          (if shift
+              ;; shift+right-click: queue order
+              (when task-queue
+                (let [order (if (= target-type :resource)
+                                (orders.gather eid target)
+                                (= target-type :enemy)
+                                (orders.attack eid target)
+                                (orders.move eid tile-x tile-y))]
+                  (table.insert task-queue.pending order)
+                  (log.debug :hud (.. "Queued order for " eid ": " order.tag))))
+              ;; normal right-click: replace order
+              (if (= target-type :resource) (issue-gather w eid target)
+                  (= target-type :enemy) (issue-attack w eid target)
+                  true (issue-move w eid tile-x tile-y))))))))
 
 (fn handle-mouse-move [x y w]
   (when cursor-default
@@ -294,7 +306,7 @@
                       (remove-from-selection eid)
                       (add-to-selection eid)))
                 (if eid (set-selection! eid) (set selected-eids [])))))
-      (= button 2) (handle-right-click x y w)))
+      (= button 2) (handle-right-click x y w shift)))
 
 {: draw-hud : handle-click : set-selection! : get-selection : draw-selection-highlight
  : set-command-mode : get-command-mode : set-drag-start : get-drag-start : clear-drag-start

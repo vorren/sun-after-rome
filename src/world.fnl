@@ -7,7 +7,7 @@
 (local rng (require :src.rng))
 
 (local component-types
-  [:position :owner :kind :health :carry :node :cooldown :producer :task])
+  [:position :owner :kind :health :carry :node :cooldown :producer :task :task-queue])
 
 (fn make-world [{: width : height : players : seed}]
   (let [store {}]
@@ -131,7 +131,8 @@
     (when (> (content.kind-stat tag :damage 0) 0)
       (world-add! w id :cooldown (components.make-cooldown 0)))
     (when (or (= tag :villager) (> (content.kind-stat tag :damage 0) 0))
-      (world-add! w id :task (components.make-task :idle nil nil nil nil)))
+      (world-add! w id :task (components.make-task :idle nil nil nil nil))
+      (world-add! w id :task-queue (components.make-task-queue)))
     id))
 
 ;; Resources (ADR-0008)

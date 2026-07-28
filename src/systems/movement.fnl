@@ -92,7 +92,16 @@
     (let [eid pair.eid t pair.val]
       (when (= t.kind :move)
         (if (at-tile? w eid t.tx t.ty)
-            (set t.kind :idle)
+            (do
+              (set t.kind :idle)
+              ;; check for queued orders
+              (let [task-queue (world.world-get w eid :task-queue)]
+                (when (and task-queue (> (# task-queue.pending) 0))
+                  (let [next-order (table.remove task-queue.pending 1)]
+                    (set t.kind next-order.tag)
+                    (when next-order.tx (set t.tx next-order.tx))
+                    (when next-order.ty (set t.ty next-order.ty))
+                    (when next-order.target (set t.target next-order.target))))))
             (step-toward! w eid t.tx t.ty))))))
 
 {: cheby : entity-pos : speed-of : collision-radius : entity-at-tile
