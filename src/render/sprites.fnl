@@ -1,5 +1,5 @@
 ;; aurelius.render.sprites --- placeholder sprite rendering with interpolation.
-;; Supports smooth movement via frame interpolation.
+;; Supports smooth movement via frame interpolation and health bars.
 
 (local world (require :src.world))
 (local iso (require :src.render.iso))
@@ -36,6 +36,35 @@
       (. node-colors tag)
       [0.5 0.5 0.5]))
 
+(fn health-bar-color [ratio]
+  "Get color based on health ratio (0-1). Green → yellow → red."
+  (if (>= ratio 0.6)
+      [0.2 0.8 0.2]    ;; green
+      (>= ratio 0.3)
+      [0.9 0.9 0.2]    ;; yellow
+      [0.9 0.2 0.2]))  ;; red
+
+(fn draw-health-bar [w eid sx sy]
+  "Draw health bar above entity at screen position (sx, sy)."
+  (let [health (world.world-get w eid :health)
+        kind (world.world-get w eid :kind)]
+    (when (and health kind)
+      (let [max-hp (world.effective-max-hp w eid)
+            ratio (/ health.hp max-hp)]
+        (when (< ratio 1)
+          (let [bar-w 24
+                bar-h 4
+                bar-x (- sx (/ bar-w 2))
+                bar-y (- sy 20)
+                fill-w (* bar-w ratio)
+                color (health-bar-color ratio)]
+            ;; background
+            (love.graphics.setColor 0.2 0.15 0.1)
+            (love.graphics.rectangle :fill bar-x bar-y bar-w bar-h)
+            ;; fill
+            (love.graphics.setColor (. color 1) (. color 2) (. color 3))
+            (love.graphics.rectangle :fill bar-x bar-y fill-w bar-h)))))))
+
 (fn draw-entity [w eid]
   (let [kind (world.world-get w eid :kind)
         pos (interpolation.interpolated-pos w eid)]
@@ -57,7 +86,9 @@
               (love.graphics.setColor color color2 color3)
               (love.graphics.circle :fill sx (- sy 8) 8)
               (love.graphics.setColor 0 0 0)
-              (love.graphics.circle :line sx (- sy 8) 8)))))))
+              (love.graphics.circle :line sx (- sy 8) 8)))
+        ;; draw health bar above entity
+        (draw-health-bar w eid sx sy)))))
 
 (fn draw-isometric-grid [w]
   (when grid-visible
