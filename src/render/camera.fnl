@@ -27,5 +27,4 @@
   (set offset-x 640)
   (set offset-y 100))
 
-{: get-offset : set-offset! : scroll-to-tile : reset
- : offset-x offset-x : offset-y offset-y}
+{: get-offset : set-offset! : scroll-to-tile : reset}
