@@ -1,9 +1,9 @@
-;; aurelius.render.sprites --- placeholder sprite rendering (colored shapes).
-;; No asset files needed yet; units are circles, buildings are rectangles.
-;; Supports float positions for smooth movement.
+;; aurelius.render.sprites --- placeholder sprite rendering with interpolation.
+;; Supports smooth movement via frame interpolation.
 
 (local world (require :src.world))
 (local iso (require :src.render.iso))
+(local interpolation (require :src.render.interpolation))
 
 (local tile-w 64)
 (local tile-h 32)
@@ -31,7 +31,7 @@
 
 (fn draw-entity [w eid]
   (let [kind (world.world-get w eid :kind)
-        pos (world.world-get w eid :position)]
+        pos (interpolation.interpolated-pos w eid)]
     (when (and kind pos)
       (let [tag kind.tag
             (raw-sx raw-sy) (iso.to-screen pos.x pos.y tile-w tile-h)
