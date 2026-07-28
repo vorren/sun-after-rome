@@ -12,6 +12,7 @@
 (local interpolation (require :src.render.interpolation))
 (local font (require :src.render.font))
 (local log (require :src.log))
+(local ui (require :src.render.ui))
 (local minimap (require :src.render.ui.minimap))
 (local win-condition (require :src.systems.win-condition))
 
@@ -51,6 +52,7 @@
   (setup-world)
   (hud.init-cursors)
   (font.load-fonts)
+  (ui.init)
   (minimap.init)
   (let [(ok source) (pcall love.audio.newSource "assets/music/sar.ogg" "stream")]
     (if ok
