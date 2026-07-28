@@ -6,3 +6,15 @@ ccache/
 *.dylib
 src/**/*.lua
 test/*_test.lua
+
+# AI tooling
+.agents/
+.scratch/
+
+# REPL
+repl.in
+repl.out
+
+# Sprites and assets (distribute separately)
+assets/units/**/*.png
+assets/**/*.png
