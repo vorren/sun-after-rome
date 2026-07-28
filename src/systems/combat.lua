@@ -7,14 +7,16 @@ local rng = require("src.rng")
 local movement = require("src.systems.movement")
 
 local function armour_class_of(w, eid)
-  local tag = w.store.kind[eid].tag
-  return content.kind_stat(tag, "armour", "none")
+  local kind = world.world_get(w, eid, "kind")
+  if not kind then return "none" end
+  return content.kind_stat(kind.tag, "armour", "none")
 end
 
 -- Deterministic damage roll
 local function attack_damage(w, attacker, target)
-  local tag = w.store.kind[attacker].tag
-  local prof = content.attack_of(tag)
+  local kind = world.world_get(w, attacker, "kind")
+  if not kind then return 0 end
+  local prof = content.attack_of(kind.tag)
   local tcls = armour_class_of(w, target)
   local bonus = prof.bonus_vs[tcls] or 0
   local raw = world.effective_damage(w, attacker, prof.damage + bonus)
@@ -54,8 +56,9 @@ local function combat_system(w)
         t.kind = "idle"
       else
         local tpx, tpy = movement.entity_pos(w, tgt)
-        local tag = w.store.kind[a].tag
-        local prof = content.attack_of(tag)
+        local kind = world.world_get(w, a, "kind")
+        if not kind then break end
+        local prof = content.attack_of(kind.tag)
         t.tx = tpx
         t.ty = tpy
         if movement.within(w, a, tpx, tpy, prof.range) then

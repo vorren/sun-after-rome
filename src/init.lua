@@ -12,16 +12,17 @@ local ai = require("src.ai.scripted")
 local interpolation = require("src.render.interpolation")
 local font = require("src.render.font")
 local log = require("src.log")
+local sounds = require("src.audio.sounds")
 local minimap = require("src.render.ui.minimap")
-local win_condition = require("src.systems.win_condition")
+local win_condition = require("src.systems.win-condition")
 
 local game_world = nil
 local terrain = nil
 local music = nil
 
 local function spawn_initial_entities(w)
-  world.spawn(w, "town_centre", {owner = 0, x = 3, y = 3})
-  world.spawn(w, "town_centre", {owner = 1, x = 20, y = 12})
+  world.spawn(w, "town-centre", {owner = 0, x = 3, y = 3})
+  world.spawn(w, "town-centre", {owner = 1, x = 20, y = 12})
   world.spawn(w, "barracks", {owner = 0, x = 5, y = 3})
   world.spawn(w, "barracks", {owner = 1, x = 18, y = 12})
   world.spawn(w, "villager", {owner = 0, x = 4, y = 4})
@@ -30,8 +31,8 @@ local function spawn_initial_entities(w)
   world.spawn(w, "tree", {x = 8, y = 6})
   world.spawn(w, "tree", {x = 9, y = 6})
   world.spawn(w, "tree", {x = 8, y = 7})
-  world.spawn(w, "gold_mine", {x = 12, y = 8})
-  world.spawn(w, "stone_mine", {x = 15, y = 10})
+  world.spawn(w, "gold-mine", {x = 12, y = 8})
+  world.spawn(w, "stone-mine", {x = 15, y = 10})
 end
 
 local function setup_world()
@@ -53,6 +54,7 @@ function love.load()
   setup_world()
   hud.init_cursors()
   font.load_fonts()
+  sounds.load_sounds()
   minimap.init()
   local ok, source = pcall(love.audio.newSource, "assets/music/sar.ogg", "stream")
   if ok then

@@ -166,7 +166,7 @@ local function draw_rally_point(w, eid)
     local sy = raw_sy + offset_y
     love.graphics.setColor(0.8, 0.8, 0.8)
     love.graphics.setLineWidth(2)
-    love.graphics.line(sx, sy, sy - 20)
+    love.graphics.line(sx, sy, sx, sy - 20)
     love.graphics.setColor(0.9, 0.2, 0.2)
     love.graphics.rectangle("fill", sx, sy - 20, 10, 8)
     love.graphics.setLineWidth(1)

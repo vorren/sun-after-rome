@@ -93,11 +93,10 @@ local function build(w, selected_eids)
         local train_btns = {}
         for _, unit_tag in ipairs(trains) do
           local cost = content.unit_cost(unit_tag)
-          local resources = world.resources[0]
           local can_afford = (not cost) or (
-            (not cost.wood or ((resources.wood or 0) >= cost.wood)) and
-            (not cost.gold or ((resources.gold or 0) >= cost.gold)) and
-            (not cost.stone or ((resources.stone or 0) >= cost.stone))
+            (not cost.wood or (world.resource_amount(w, 0, "wood") >= cost.wood)) and
+            (not cost.gold or (world.resource_amount(w, 0, "gold") >= cost.gold)) and
+            (not cost.stone or (world.resource_amount(w, 0, "stone") >= cost.stone))
           )
           table.insert(train_btns, {
             type = "button",
@@ -125,7 +124,7 @@ local function build(w, selected_eids)
         if #children > 0 then
           return {
             type = "panel",
-            x = "right-300", y = "bottom-180",
+            x = ":right-300", y = ":bottom-180",
             w = 300, h = 70 + (20 * queue_len),
             pad = 8,
             children = children

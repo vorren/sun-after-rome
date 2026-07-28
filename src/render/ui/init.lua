@@ -8,7 +8,7 @@ local theme = require("src.render.ui.theme")
 -- State
 -- ---------------------------------------------------------------------------
 
-local current_theme = nil
+local current_theme = theme.make_theme()
 local hover_id = nil
 local click_id = nil
 local widget_bounds = {}

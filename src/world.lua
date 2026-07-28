@@ -289,6 +289,12 @@ local function snapshot(w)
   }
 end
 
+local function world_get_tile(w, x, y)
+  if w.terrain and w.terrain[x] then
+    return w.terrain[x][y]
+  end
+end
+
 return {
   make_world = make_world,
   fresh_id = fresh_id,
@@ -301,6 +307,8 @@ return {
   world_query = world_query,
   ["world-query"] = world_query,
   world_remove_entity = world_remove_entity,
+  world_get_tile = world_get_tile,
+  ["world-get-tile"] = world_get_tile,
   world_entities = world_entities,
   spawn = spawn,
   spawn_bang = spawn,
