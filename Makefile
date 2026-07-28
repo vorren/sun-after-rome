@@ -57,7 +57,7 @@ test: build $(TEST_LUA)
 	LUA_PATH=";;./lib/?.lua;./?.lua;./?/init.lua" LUA_CPATH=";;./lib/?.so" lua test/run.lua
 
 ## smoke-test : Run LÖVE smoke test (catches runtime errors)
-smoke-test: build
+smoke-test: build $(TEST_LUA)
 	@echo "--- Running smoke test ---"
 	$(LOVE) . --smoke-test; echo "Exit code: $$?"
 
@@ -66,7 +66,7 @@ test/%.lua: test/%.fnl $(LUAFENNEL)
 
 ## clean : Remove compiled output
 clean:
-	rm -f src/*.lua src/**/*.lua test/*_test.lua
+	rm -f src/*.lua src/**/*.lua test/*.lua
 
 ## repl : Launch LÖVE (REPL thread starts automatically in love.load)
 repl:

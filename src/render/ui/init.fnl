@@ -64,12 +64,11 @@
       (= x :center) (/ (- screen-w w) 2)
       (= (type x) :string)
       (let [(rel offset) (x:match "^:(%w+)[%-+](%d+)$")]
-        (cond
-          (= rel :right) (- screen-w w (tonumber offset))
-          (= rel :center) (/ (- screen-w w) 2)
-          (= rel :bottom) 0
-          (= rel :top) 0
-          :else (tonumber offset)))
+        (if (= rel :right) (- screen-w w (tonumber offset))
+            (= rel :center) (/ (- screen-w w) 2)
+            (= rel :bottom) 0
+            (= rel :top) 0
+            (tonumber offset)))
       (or x 0)))
 
 (fn resolve-y [y h screen-h]
@@ -79,12 +78,11 @@
       (= y :center) (/ (- screen-h h) 2)
       (= (type y) :string)
       (let [(rel offset) (y:match "^:(%w+)[%-+](%d+)$")]
-        (cond
-          (= rel :bottom) (- screen-h h (tonumber offset))
-          (= rel :center) (/ (- screen-h h) 2)
-          (= rel :right) 0
-          (= rel :left) 0
-          :else (tonumber offset)))
+        (if (= rel :bottom) (- screen-h h (tonumber offset))
+            (= rel :center) (/ (- screen-h h) 2)
+            (= rel :right) 0
+            (= rel :left) 0
+            (tonumber offset)))
       (or y 0)))
 
 ;; ---------------------------------------------------------------------------
