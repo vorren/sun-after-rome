@@ -8,13 +8,16 @@
   {:town-centre  {:max-hp 600 :trains [:villager] :blocks true}
    :barracks     {:max-hp 350 :trains [:knight :pikeman :archer] :blocks true}
    :villager     {:max-hp 40 :cost {:wood 25} :train-time 25 :speed 1
-                  :gather-rate 1 :gather-capacity 10}
+                   :gather-rate 1 :gather-capacity 10 :collision-radius 0.3}
    :knight       {:max-hp 100 :cost {:wood 20 :gold 75} :train-time 30 :speed 2
-                  :damage 10 :range 1 :armour :cavalry :bonus-vs {} :cooldown 10}
+                   :damage 10 :range 1 :armour :cavalry :bonus-vs {} :cooldown 10
+                   :collision-radius 0.4}
    :pikeman      {:max-hp 55 :cost {:wood 25 :stone 10} :train-time 22 :speed 1
-                  :damage 4 :range 1 :armour :infantry :bonus-vs {:cavalry 15} :cooldown 10}
+                   :damage 4 :range 1 :armour :infantry :bonus-vs {:cavalry 15} :cooldown 10
+                   :collision-radius 0.3}
    :archer       {:max-hp 30 :cost {:wood 25 :gold 45} :train-time 27 :speed 1
-                  :damage 4 :range 4 :armour :archer :bonus-vs {:infantry 3} :cooldown 14}
+                   :damage 4 :range 4 :armour :archer :bonus-vs {:infantry 3} :cooldown 14
+                   :collision-radius 0.3}
    :tree         {:node :wood :amount 100}
    :gold-mine    {:node :gold :amount 80}
    :stone-mine   {:node :stone :amount 80}})

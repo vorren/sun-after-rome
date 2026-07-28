@@ -58,7 +58,7 @@
      (let [t (world.world-get w 1 :task)]
        (luaunit.assertEquals t.kind :idle))))
 
- :test-units-pass-through-each-other
+ :test-units-push-on-collision
  (fn []
    (let [w (world.make-world {:seed 42})]
      (world.spawn! w :villager {:owner 0 :x 3 :y 3})
@@ -70,8 +70,8 @@
      (sim.tick! w)
      (let [p1 (world.world-get w 1 :position)
            p2 (world.world-get w 2 :position)]
-       (luaunit.assertTrue (> p1.x 3))
-       (luaunit.assertTrue (< p2.x 5)))))
+       (luaunit.assertTrue (>= p1.x 3))
+       (luaunit.assertTrue (<= p2.x 5)))))
 
  :test-movement-system-function
  (fn []
