@@ -93,7 +93,7 @@
   (hud.draw-drag-rect)
   (floating-text.draw-texts game-world)
   (hud.draw-hud game-world)
-  (minimap.draw game-world))
+  (minimap.draw terrain game-world))
 
 (fn love.keypressed [key]
   (match key

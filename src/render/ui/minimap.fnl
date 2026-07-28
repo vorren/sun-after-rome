@@ -39,19 +39,20 @@
   (set canvas (love.graphics.newCanvas mm-w mm-h))
   (log.info :minimap "Minimap initialized"))
 
-(fn draw-terrain [w]
+(fn draw-terrain [terrain w]
   "Draw terrain pixels to canvas."
-  (let [pixel-w (/ mm-w w.width)
-        pixel-h (/ mm-h w.height)]
-    ;; draw terrain tiles
-    (for [x 0 (- w.width 1)]
-      (for [y 0 (- w.height 1)]
-        (let [terrain (world.world-get-tile w x y)
-              color (or (. terrain-colors terrain) [0.5 0.5 0.5])]
-          (love.graphics.setColor (. color 1) (. color 2) (. color 3))
-          (love.graphics.rectangle :fill
-                                   (* x pixel-w) (* y pixel-h)
-                                   (+ pixel-w 1) (+ pixel-h 1)))))))
+  (when terrain
+    (let [pixel-w (/ mm-w w.width)
+          pixel-h (/ mm-h w.height)]
+      ;; draw terrain tiles
+      (for [x 0 (- w.width 1)]
+        (for [y 0 (- w.height 1)]
+          (let [tile (. (. terrain x) y)
+                color (or (. terrain-colors tile) [0.5 0.5 0.5])]
+            (love.graphics.setColor (. color 1) (. color 2) (. color 3))
+            (love.graphics.rectangle :fill
+                                     (* x pixel-w) (* y pixel-h)
+                                     (+ pixel-w 1) (+ pixel-h 1))))))))
 
 (fn draw-entities [w]
   "Draw entity dots on minimap."
@@ -93,16 +94,16 @@
                              (* view-w pixel-w)
                              (* view-h pixel-h))))
 
-(fn update-canvas [w]
+(fn update-canvas [terrain w]
   "Update minimap canvas (called every N ticks)."
   (when (and canvas visible)
     (love.graphics.setCanvas canvas)
     (love.graphics.clear 0.1 0.1 0.1)
-    (draw-terrain w)
+    (draw-terrain terrain w)
     (draw-entities w)
     (love.graphics.setCanvas)))
 
-(fn draw [w]
+(fn draw [terrain w]
   "Draw minimap on screen."
   (when visible
     (let [(screen-w screen-h) (love.graphics.getDimensions)
@@ -110,7 +111,7 @@
           mm-y (- screen-h mm-h 10)]
       ;; update canvas periodically
       (when (>= (- w.tick last-update-tick) update-interval)
-        (update-canvas w)
+        (update-canvas terrain w)
         (set last-update-tick w.tick))
       ;; draw canvas to screen
       (love.graphics.setColor 1 1 1)
