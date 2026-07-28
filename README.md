@@ -103,6 +103,8 @@ make enet     # Compile the ENet binding (requires headers)
 
 The game includes a file-based Fennel REPL for inspecting and modifying game state at runtime.
 
+**Full reference guide:** [docs/repl-reference.md](docs/repl-reference.md)
+
 ### Terminal
 
 ```bash
