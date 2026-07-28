@@ -8,6 +8,7 @@
 (local sounds (require :src.audio.sounds))
 (local log (require :src.log))
 (local ui (require :src.render.ui))
+(local command-card (require :src.render.ui.command-card))
 
 (var selected-eids [])
 (var command-mode nil)
@@ -246,6 +247,15 @@
                  :w 280 :h (* 12 s)
                  :value health.hp :max max-hp
                  :fill :gold :bg :brown})]}))
+
+        ;; Command card
+        (command-card.build w selected-eids
+          (fn [cmd]
+            (if cmd.train
+                (log.info :command-card (.. "Training " cmd.train))
+                (do
+                  (hud.set-command-mode cmd.mode)
+                  (log.debug :command-card (.. "Command mode: " cmd.mode))))))
 
         ;; Command mode hint
         (when command-mode
