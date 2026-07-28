@@ -1,5 +1,5 @@
 {
-  description = "Sun After Rome - Fennel + LÖVE RTS";
+  description = "Sun After Rome - LÖVE RTS";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -30,7 +30,6 @@
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = [
             pkgs.pkg-config
-            pkgs.luaPackages.fennel
             pkgs.lua5_4
             pkgs.git
           ];
@@ -43,7 +42,6 @@
           shellHook = ''
             echo "Sun After Rome dev shell"
             echo "  love .          — run game (love must be installed externally)"
-            echo "  make build      — compile Fennel to Lua"
             echo "  make test       — run test suite"
             echo "  make smoke-test — run LÖVE smoke test (catches runtime errors)"
             echo "  nix build       — package as .love file"
