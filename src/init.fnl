@@ -91,6 +91,7 @@
     :escape (do
               (hud.set-command-mode nil)
               (love.event.quit))
+    :f3 (sprites.toggle-grid)
     :m (hud.set-command-mode :move)
     :g (hud.set-command-mode :gather)
     :a (hud.set-command-mode :attack)

@@ -23,6 +23,11 @@
    :gold-mine  [0.9 0.8 0.1]
    :stone-mine [0.6 0.6 0.6]})
 
+(var grid-visible true)
+
+(fn toggle-grid []
+  (set grid-visible (not grid-visible)))
+
 (fn get-color [tag]
   (or (. unit-colors tag)
       (. building-colors tag)
@@ -53,18 +58,19 @@
               (love.graphics.circle :line sx (- sy 8) 8)))))))
 
 (fn draw-isometric-grid [w]
-  (love.graphics.setColor 0.3 0.3 0.3 0.3)
-  (for [x 0 (- w.width 1)]
-    (for [y 0 (- w.height 1)]
-      (let [(raw-sx raw-sy) (iso.to-screen x y tile-w tile-h)]
-        (var sx (+ raw-sx 640))
-        (var sy (+ raw-sy 100))
-        (love.graphics.line
-         sx (- sy (/ tile-h 2))
-         (+ sx (/ tile-w 2)) sy
-         sx (+ sy (/ tile-h 2))
-         (- sx (/ tile-w 2)) sy
-         sx (- sy (/ tile-h 2)))))))
+  (when grid-visible
+    (love.graphics.setColor 0.3 0.3 0.3 0.3)
+    (for [x 0 (- w.width 1)]
+      (for [y 0 (- w.height 1)]
+        (let [(raw-sx raw-sy) (iso.to-screen x y tile-w tile-h)]
+          (var sx (+ raw-sx 640))
+          (var sy (+ raw-sy 100))
+          (love.graphics.line
+           sx (- sy (/ tile-h 2))
+           (+ sx (/ tile-w 2)) sy
+           sx (+ sy (/ tile-h 2))
+           (- sx (/ tile-w 2)) sy
+           sx (- sy (/ tile-h 2))))))))
 
 (fn draw-world [w]
   (draw-isometric-grid w)
@@ -79,4 +85,4 @@
     (each [_ e (ipairs entities)]
       (draw-entity w e.eid))))
 
-{: draw-world : draw-entity : tile-w : tile-h}
+{: draw-world : draw-entity : tile-w : tile-h : toggle-grid}
