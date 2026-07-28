@@ -9,6 +9,7 @@
 (local log (require :src.log))
 (local ui (require :src.render.ui))
 (local command-card (require :src.render.ui.command-card))
+(local production-queue (require :src.render.ui.production-queue))
 
 (var selected-eids [])
 (var command-mode nil)
@@ -256,6 +257,9 @@
                 (do
                   (hud.set-command-mode cmd.mode)
                   (log.debug :command-card (.. "Command mode: " cmd.mode))))))
+
+        ;; Production queue
+        (production-queue.build w selected-eids)
 
         ;; Command mode hint
         (when command-mode
