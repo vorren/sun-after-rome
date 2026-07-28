@@ -129,9 +129,18 @@
           target (entity-at-tile w tile-x tile-y)
           target-type (classify-target w target)]
       (each [_ eid (ipairs selected-eids)]
-        (if (= target-type :resource) (issue-gather w eid target)
-            (= target-type :enemy) (issue-attack w eid target)
-            true (issue-move w eid tile-x tile-y))))))
+        (let [kind (world.world-get w eid :kind)
+              producer (world.world-get w eid :producer)]
+          ;; if this is a building with a producer, set rally point
+          (if (and producer kind)
+              (do
+                (set producer.rally-x tile-x)
+                (set producer.rally-y tile-y)
+                (log.debug :hud (.. "Rally point set for " (tostring kind.tag) " at " tile-x "," tile-y)))
+              ;; otherwise, issue normal command
+              (= target-type :resource) (issue-gather w eid target)
+              (= target-type :enemy) (issue-attack w eid target)
+              true (issue-move w eid tile-x tile-y)))))))
 
 (fn handle-mouse-move [x y w]
   (when cursor-default
