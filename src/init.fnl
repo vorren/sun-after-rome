@@ -10,6 +10,7 @@
 (local floating-text (require :src.render.floating-text))
 (local ai (require :src.ai.scripted))
 (local interpolation (require :src.render.interpolation))
+(local font (require :src.render.font))
 
 (var game-world nil)
 (var terrain nil)
@@ -40,6 +41,7 @@
 (fn love.load []
   (setup-world)
   (hud.init-cursors)
+  (font.load-fonts)
   (let [(ok source) (pcall love.audio.newSource "assets/music/sar.ogg" "stream")]
     (when ok
       (set music source)
