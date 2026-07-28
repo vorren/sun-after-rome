@@ -4,5 +4,3 @@ ccache/
 *.so
 *.dll
 *.dylib
-src/**/*.lua
-test/*_test.lua
