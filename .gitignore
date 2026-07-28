@@ -6,3 +6,7 @@ ccache/
 *.dylib
 src/**/*.lua
 test/*_test.lua
+.agents/
+.scratch/
+repl.in
+repl.out
