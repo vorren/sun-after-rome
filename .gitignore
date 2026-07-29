@@ -19,3 +19,6 @@ assets/**/*.png
 
 # macOS
 .DS_Store
+
+# nix build
+result/
