@@ -30,8 +30,9 @@
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = [
             pkgs.pkg-config
-            pkgs.lua5_4
+            pkgs.luajit
             pkgs.git
+            pkgs.love
           ];
 
           buildInputs = [
